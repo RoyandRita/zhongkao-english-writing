@@ -463,7 +463,7 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
       <div style={DS.sentenceText}>
         {segments.map((seg, i) => {
           if (!seg.isHighlight) {
-            return <span key={i} style={{ color: "#334155" }}>{seg.text}</span>;
+            return <span key={i} style={{ color: "#1a1a2e" }}>{seg.text}</span>;
           }
           const isClicked = clickedIds.has(seg.hlIndex);
           const isDragOver = dragOverZone === `${side}-${seg.hlIndex}`;
@@ -480,25 +480,25 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 background: isDragOver
                   ? typeMeta.bg
                   : isClicked
-                    ? `linear-gradient(180deg, transparent 60%, ${typeMeta.bg} 60%)`
+                    ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
                     : "transparent",
                 borderBottom: isClicked
-                  ? `2.5px solid ${typeMeta.color}`
+                  ? `3px solid ${typeMeta.color}`
                   : isDragOver
-                    ? `2.5px dashed ${typeMeta.color}`
+                    ? `3px dashed ${typeMeta.color}`
                     : `2px dotted #cbd5e1`,
                 cursor: "pointer",
                 position: "relative",
-                transition: "all 0.25s ease",
-                padding: "2px 3px",
-                borderRadius: isClicked || isDragOver ? 4 : 3,
-                boxShadow: isDragOver ? `0 0 0 3px ${typeMeta.bg}` : "none",
-                transform: isDragOver ? "scale(1.03)" : "scale(1)",
+                transition: "all 0.2s ease",
+                padding: "2px 4px",
+                borderRadius: isClicked || isDragOver ? 5 : 3,
+                boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
+                transform: isDragOver ? "scale(1.04)" : "scale(1)",
               }}
               title={
                 isClicked
                   ? `✓ ${typeMeta.label} — 点击取消`
-                  : "👆 点击标记，或从右侧拖入标签"
+                  : "👆 点击标记，或拖入下方维度标签"
               }
             >
               {seg.text}
@@ -507,10 +507,46 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
         })}
       </div>
 
-      {/* Marked labels area — shown below sentence text */}
-      {markedLabels.length > 0 && (
-        <div style={DS.markedLabelsArea}>
-          <div style={DS.markedLabelsTitle}>📌 已标记的得分结构</div>
+      {/* Drag Palette — 拖拽维度标签标记得分点 */}
+      <div style={DS.dragPalette}>
+        <div style={DS.dragPaletteLabel}>拖拽标签标记得分点 ↴</div>
+        <div style={DS.dragPalettePills}>
+          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => (
+            <span
+              key={dimKey}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData("application/score-dimension", dimKey);
+                e.dataTransfer.effectAllowed = "copy";
+                e.currentTarget.style.opacity = "0.5";
+              }}
+              onDragEnd={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
+              style={{
+                ...DS.dragPill,
+                background: dim.bg,
+                color: dim.color,
+                border: `1.5px solid ${dim.border}`,
+              }}
+              title={`拖拽到上方句中标亮文字\n${dim.desc}`}
+            >
+              <span style={DS.dragPillIcon}>{dim.icon}</span>
+              <span style={DS.dragPillLabel}>{dim.label}</span>
+              <span style={DS.dragPillHandle}>⠿</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Annotation Lane — 已标记的得分结构放置区 */}
+      <div style={DS.annotationLane}>
+        <div style={DS.annotationLaneTitle}>
+          {markedLabels.length > 0
+            ? `📌 已标记 ${markedLabels.length} 处得分结构`
+            : "📌 得分结构标注区 — 点击句中文字或拖入上方标签"}
+        </div>
+        {markedLabels.length > 0 && (
           <div style={DS.markedLabelsList}>
             {markedLabels.map((ml) => (
               <span
@@ -525,57 +561,33 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 title={`点击移除标记\n得分维度：${ml.dimLabel || "—"}\n语法类型：${ml.typeLabel}`}
               >
                 {ml.dimIcon && (
-                  <span style={{ fontSize:12, lineHeight:1 }} title={ml.dimLabel}>{ml.dimIcon}</span>
+                  <span style={{ fontSize:13, lineHeight:1 }} title={ml.dimLabel}>{ml.dimIcon}</span>
                 )}
                 <span style={DS.markedLabelType}>{ml.typeLabel}</span>
-                <span style={DS.markedLabelText}>{ml.label.split("—")[0]?.trim() || ml.label.slice(0, 25)}</span>
+                <span style={DS.markedLabelText}>{ml.label.split("—")[0]?.trim() || ml.label.slice(0, 30)}</span>
                 <span style={DS.markedLabelRemove}>×</span>
               </span>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Score Dimension Bar — 五维得分点色条 */}
-      <div style={DS.dimensionBar}>
-        <div style={DS.dimensionBarLabel}>得分维度</div>
-        <div style={DS.dimensionBarRow}>
-          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
-            const count = dimensionHits[dimKey] || 0;
-            const isHit = count > 0;
-            return (
-              <div
-                key={dimKey}
-                style={{
-                  ...DS.dimensionBlock,
-                  background: isHit ? dim.bg : "#fafbfc",
-                  color: isHit ? dim.color : "#94a3b8",
-                  border: `1px solid ${isHit ? dim.border : "#e8ecf0"}`,
-                  cursor: "default",
-                }}
-                title={`${dim.icon} ${dim.label}${isHit ? `：${count}处可得分点` : "：本句未涉及"}\n${dim.desc}`}
-              >
-                <span style={DS.dimensionBlockIcon}>{dim.icon}</span>
-                {isHit ? (
-                  <span style={DS.dimensionBlockCount}>{count}</span>
-                ) : (
-                  <span style={DS.dimensionBlockLabel}>{dim.shortLabel}</span>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {totalDimensionsHit > 0 && (
-          <div style={DS.dimensionBarSummary}>
-            ✅ 本句覆盖 <strong>{totalDimensionsHit}/5</strong> 个得分维度
+        )}
+        {markedLabels.length === 0 && (
+          <div style={DS.annotationLaneHint}>
+            💡 点击句中<span style={{borderBottom:"2px dotted #cbd5e1"}}>虚线标注</span>的文字，或拖拽上方维度标签到句中文字
           </div>
         )}
       </div>
 
+      {/* Compact dimension summary */}
+      {totalDimensionsHit > 0 && (
+        <div style={DS.dimensionBarSummary}>
+          覆盖 <strong>{totalDimensionsHit}/5</strong> 个得分维度
+        </div>
+      )}
+
       {/* Hint when nothing marked */}
       {totalClicked === 0 && (
         <div style={DS.emptyMarkHint}>
-          💡 点击句中虚线标注的文字，或从右侧 <strong>技巧图例</strong> 拖入标签来标记亮点
+          💡 点击句中虚线标注的文字，或拖拽上方维度标签来标记亮点
         </div>
       )}
     </div>
@@ -1785,11 +1797,11 @@ const DS = {
     letterSpacing:"0.02em",
   },
   sentenceText: {
-    fontSize:17, lineHeight:2.4, color:"#1a1a2e", marginBottom:12,
+    fontSize:18, lineHeight:2.6, color:"#1a1a2e", marginBottom:16,
     fontWeight:500, letterSpacing:"0.01em",
   },
   highlightZone: {
-    padding:"1px 2px", borderRadius:3, margin:"0 1px",
+    padding:"2px 4px", borderRadius:4, margin:"0 1px",
   },
   markedLabelsArea: {
 
@@ -1814,24 +1826,24 @@ const DS = {
   },
 
   markedLabelChip: {
-    display:"inline-flex", alignItems:"center", gap:5,
-    padding:"4px 12px", borderRadius:20,
-    fontSize:11, fontWeight:500,
+    display:"inline-flex", alignItems:"center", gap:6,
+    padding:"6px 14px", borderRadius:22,
+    fontSize:12, fontWeight:500,
     cursor:"pointer", transition:"all 0.15s ease",
     userSelect:"none",
   },
 
   markedLabelType: {
-    fontSize:9.5, padding:"1px 6px", borderRadius:6,
+    fontSize:10, padding:"2px 7px", borderRadius:6,
     background:"rgba(0,0,0,0.04)", fontWeight:600,
   },
 
   markedLabelText: {
-    maxWidth:140, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+    maxWidth:180, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
   },
 
   markedLabelRemove: {
-    fontSize:14, fontWeight:500, opacity:0.35, marginLeft:2,
+    fontSize:15, fontWeight:500, opacity:0.35, marginLeft:2,
   },
 
   emptyMarkHint: {
@@ -1887,42 +1899,57 @@ const DS = {
     border:"1px solid #fde68a",
   },
 
-  // ── Score Dimension Bar styles ──
-  dimensionBar: {
-    marginTop:16, paddingTop:16,
-    borderTop:"1px solid #f1f5f9",
-    display:"flex", alignItems:"center", justifyContent:"space-between",
-    flexWrap:"wrap", gap:8,
+  // ── Drag Palette styles (inline below sentence text) ──
+  dragPalette: {
+    marginTop:4, marginBottom:6,
+    padding:"12px 16px",
+    background:"#fafbfc", borderRadius:14,
+    border:"1.5px dashed #e2e8f0",
   },
-  dimensionBarLabel: {
-    fontSize:10.5, fontWeight:600, color:"#94a3b8",
-    letterSpacing:"0.03em", flexShrink:0,
+  dragPaletteLabel: {
+    fontSize:11.5, fontWeight:600, color:"#64748b",
+    marginBottom:10, textAlign:"center",
   },
-  dimensionBarRow: {
-    display:"flex", gap:8, flexWrap:"wrap", alignItems:"center",
+  dragPalettePills: {
+    display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap",
   },
-  dimensionBlock: {
-    display:"inline-flex", alignItems:"center", gap:4,
-    padding:"4px 10px", borderRadius:20,
-    fontSize:11, fontWeight:600,
-    transition:"all 0.2s ease",
-    whiteSpace:"nowrap",
+  dragPill: {
+    display:"inline-flex", alignItems:"center", gap:6,
+    padding:"8px 16px", borderRadius:24,
+    fontSize:13, fontWeight:600,
+    cursor:"grab", transition:"all 0.15s ease",
+    userSelect:"none",
   },
-  dimensionBlockIcon: {
-    fontSize:12, lineHeight:1,
+  dragPillIcon: {
+    fontSize:15, lineHeight:1,
   },
-  dimensionBlockLabel: {
-    fontSize:10.5, lineHeight:1,
+  dragPillLabel: {
+    fontSize:13, lineHeight:1,
   },
-  dimensionBlockCount: {
-    fontSize:9, fontWeight:700,
-    background:"rgba(0,0,0,0.06)", borderRadius:8,
-    padding:"1px 5px", lineHeight:1, marginLeft:1,
+  dragPillHandle: {
+    fontSize:13, opacity:0.4, marginLeft:2, letterSpacing:2,
   },
+
+  // ── Annotation Lane styles (marked labels drop zone) ──
+  annotationLane: {
+    marginTop:4, padding:"14px 16px",
+    background:"#fdfdff", borderRadius:14,
+    border:"1.5px solid #e8ecf0",
+    minHeight:50,
+  },
+  annotationLaneTitle: {
+    fontSize:11.5, fontWeight:600, color:"#64748b",
+    marginBottom:8, letterSpacing:"0.02em",
+  },
+  annotationLaneHint: {
+    fontSize:12, color:"#94a3b8",
+    textAlign:"center", lineHeight:1.8,
+  },
+
+  // ── Compact dimension summary (replaces old full bar) ──
   dimensionBarSummary: {
-    marginTop:6, fontSize:11, color:"#3b7d5a",
+    marginTop:8, fontSize:11.5, color:"#3b7d5a",
     textAlign:"right", fontWeight:500,
-    width:"100%",
   },
 
   // Draggable legend items
