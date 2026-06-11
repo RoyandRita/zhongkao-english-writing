@@ -340,6 +340,32 @@ const HIGHLIGHT_TYPES = {
   "adj-noun":         { label:"形容词+名词修饰", color:"#9333ea", bg:"#faf5ff" },
 };
 
+// ── Five Score Dimensions (得分点五维体系) ──
+// Each dimension answers "why this sentence scores" rather than "what grammar it has"
+const SCORE_DIMENSIONS = {
+  vocab:     { key:"vocab",     icon:"📗", label:"词汇亮点", shortLabel:"词汇", desc:"高级词汇·短语·搭配，体现词汇深度", color:"#16a34a", bg:"#f0fdf4", border:"#86efac" },
+  syntax:    { key:"syntax",    icon:"📘", label:"句法结构", shortLabel:"句法", desc:"从句·非谓语·倒装，体现句法多样", color:"#1d4ed8", bg:"#eff6ff", border:"#93c5fd" },
+  logic:     { key:"logic",     icon:"📙", label:"逻辑衔接", shortLabel:"逻辑", desc:"衔接词·转折·呼应，体现篇章逻辑", color:"#d97706", bg:"#fffbeb", border:"#fcd34d" },
+  cognition: { key:"cognition", icon:"📒", label:"认知升华", shortLabel:"认知", desc:"感悟·哲理·升华，体现思想深度", color:"#7c3aed", bg:"#f5f3ff", border:"#c4b5fd" },
+  emotion:   { key:"emotion",   icon:"📓", label:"情感真实", shortLabel:"情感", desc:"个人细节·感官，体现真实情感", color:"#be123c", bg:"#fff1f2", border:"#fda4af" },
+};
+
+// Map each grammar highlight type to its primary score dimension
+const TYPE_TO_DIMENSION = {
+  "non-finite":       "syntax",
+  "adverb":           "vocab",
+  "non-restrictive":  "syntax",
+  "concrete-imagery": "emotion",
+  "change-verb":      "cognition",
+  "mind-verb":        "cognition",
+  "connector":        "logic",
+  "object-clause":    "syntax",
+  "concrete-feeling": "emotion",
+  "specific-detail":  "emotion",
+  "adverb-action":    "vocab",
+  "adj-noun":         "vocab",
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HIGHLIGHT SENTENCE COMPONENT — with drag-and-drop from right legend panel
 // ─────────────────────────────────────────────────────────────────────────────
@@ -378,9 +404,23 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
   sortedHL.forEach((hl, idx) => {
     if (clickedIds.has(idx)) {
       const typeMeta = HIGHLIGHT_TYPES[hl.type] || { color: accentColor, bg: accentColor + "20", label: hl.type };
-      markedLabels.push({ hlIndex: idx, type: hl.type, label: hl.label, color: typeMeta.color, bg: typeMeta.bg, typeLabel: typeMeta.label });
+      const dimKey = TYPE_TO_DIMENSION[hl.type];
+      const dimMeta = dimKey ? SCORE_DIMENSIONS[dimKey] : null;
+      markedLabels.push({
+        hlIndex: idx, type: hl.type, label: hl.label,
+        color: typeMeta.color, bg: typeMeta.bg, typeLabel: typeMeta.label,
+        dimKey, dimIcon: dimMeta?.icon, dimColor: dimMeta?.color, dimLabel: dimMeta?.shortLabel,
+      });
     }
   });
+
+  // Compute which score dimensions this sentence hits (from all its highlights)
+  const dimensionHits = {};
+  sortedHL.forEach(hl => {
+    const dim = TYPE_TO_DIMENSION[hl.type];
+    if (dim) dimensionHits[dim] = (dimensionHits[dim] || 0) + 1;
+  });
+  const totalDimensionsHit = Object.keys(dimensionHits).length;
 
   const handleDragOver = (e, hlIndex) => {
     e.preventDefault();
@@ -395,7 +435,9 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
   const handleDrop = (e, hlIndex) => {
     e.preventDefault();
     setDragOverZone && setDragOverZone(null);
-    const dragType = e.dataTransfer.getData("application/highlight-type");
+    // Accept both grammar types and score dimensions
+    const dragType = e.dataTransfer.getData("application/highlight-type")
+                  || e.dataTransfer.getData("application/score-dimension");
     if (dragType) {
       onDrop && onDrop(hlIndex, dragType);
     }
@@ -469,7 +511,7 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
       {/* Marked labels area — shown below sentence text */}
       {markedLabels.length > 0 && (
         <div style={DS.markedLabelsArea}>
-          <div style={DS.markedLabelsTitle}>📌 已标记的结构</div>
+          <div style={DS.markedLabelsTitle}>📌 已标记的得分结构</div>
           <div style={DS.markedLabelsList}>
             {markedLabels.map((ml) => (
               <span
@@ -481,8 +523,11 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                   border: `1px solid ${ml.color}40`,
                 }}
                 onClick={() => onToggle(ml.hlIndex)}
-                title="点击移除标记"
+                title={`点击移除标记\n得分维度：${ml.dimLabel || "—"}\n语法类型：${ml.typeLabel}`}
               >
+                {ml.dimIcon && (
+                  <span style={{ fontSize:12, lineHeight:1 }} title={ml.dimLabel}>{ml.dimIcon}</span>
+                )}
                 <span style={DS.markedLabelType}>{ml.typeLabel}</span>
                 <span style={DS.markedLabelText}>{ml.label.split("—")[0]?.trim() || ml.label.slice(0, 25)}</span>
                 <span style={DS.markedLabelRemove}>×</span>
@@ -491,6 +536,39 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
           </div>
         </div>
       )}
+
+      {/* Score Dimension Bar — 五维得分点色条 */}
+      <div style={DS.dimensionBar}>
+        <div style={DS.dimensionBarLabel}>得分维度</div>
+        <div style={DS.dimensionBarRow}>
+          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
+            const count = dimensionHits[dimKey] || 0;
+            const isHit = count > 0;
+            return (
+              <div
+                key={dimKey}
+                style={{
+                  ...DS.dimensionBlock,
+                  background: isHit ? dim.color : "#f1f5f9",
+                  color: isHit ? "#fff" : "#94a3b8",
+                  border: `1.5px solid ${isHit ? dim.border : "#e2e8f0"}`,
+                  cursor: "default",
+                }}
+                title={`${dim.icon} ${dim.label}${isHit ? `：${count}处可得分点` : "：本句未涉及"}\n${dim.desc}`}
+              >
+                <span style={DS.dimensionBlockIcon}>{dim.icon}</span>
+                <span style={DS.dimensionBlockLabel}>{dim.shortLabel}</span>
+                {isHit && <span style={DS.dimensionBlockCount}>{count}</span>}
+              </div>
+            );
+          })}
+        </div>
+        {totalDimensionsHit > 0 && (
+          <div style={DS.dimensionBarSummary}>
+            ✅ 本句覆盖 <strong>{totalDimensionsHit}/5</strong> 个得分维度
+          </div>
+        )}
+      </div>
 
       {/* Hint when nothing marked */}
       {totalClicked === 0 && (
@@ -517,6 +595,20 @@ function DiscoveryEssayPreview({ topic, discoveryChoices, onEnterWrite, onRestar
 
   const aCount = Object.values(discoveryChoices).filter(c => c === "a").length;
   const bCount = Object.values(discoveryChoices).filter(c => c === "b").length;
+
+  // Compute aggregate five-dimension distribution across all chosen sentences
+  const dimensionTotal = { vocab: 0, syntax: 0, logic: 0, cognition: 0, emotion: 0 };
+  sentences.forEach(s => {
+    const choice = discoveryChoices[s.id];
+    if (!choice) return;
+    const highlights = s.discovery[choice].highlights || [];
+    highlights.forEach(hl => {
+      const dim = TYPE_TO_DIMENSION[hl.type];
+      if (dim) dimensionTotal[dim]++;
+    });
+  });
+  const maxDimCount = Math.max(...Object.values(dimensionTotal), 1);
+  const activeDimensions = Object.values(dimensionTotal).filter(v => v > 0).length;
 
   return (
     <div style={DS.previewShell}>
@@ -556,6 +648,47 @@ function DiscoveryEssayPreview({ topic, discoveryChoices, onEnterWrite, onRestar
             );
           })}
         </div>
+      </div>
+
+      {/* Five-Dimension Distribution Card */}
+      <div style={DS.previewDimCard}>
+        <div style={DS.previewDimTitle}>🎯 得分维度分布</div>
+        <div style={DS.previewDimSub}>
+          你的发现版文章覆盖了 <strong>{activeDimensions}/5</strong> 个得分维度，共 <strong>{Object.values(dimensionTotal).reduce((a,b)=>a+b,0)}</strong> 处得分点
+        </div>
+        <div style={DS.previewDimBars}>
+          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
+            const count = dimensionTotal[dimKey] || 0;
+            const barWidth = Math.round((count / maxDimCount) * 100);
+            return (
+              <div key={dimKey} style={DS.previewDimRow}>
+                <div style={DS.previewDimLabel}>
+                  <span>{dim.icon}</span>
+                  <span style={{ fontWeight:600, fontSize:12, color:"#334155" }}>{dim.label}</span>
+                </div>
+                <div style={DS.previewDimBarTrack}>
+                  <div style={{
+                    ...DS.previewDimBarFill,
+                    width:`${barWidth}%`,
+                    background: count > 0 ? dim.color : "#e2e8f0",
+                  }} />
+                </div>
+                <span style={{
+                  ...DS.previewDimCount,
+                  color: count > 0 ? dim.color : "#94a3b8",
+                  fontWeight: count > 0 ? 700 : 400,
+                }}>
+                  {count}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        {activeDimensions < 3 && (
+          <div style={DS.previewDimTip}>
+            💡 提示：尝试选择不同风格的句子，以覆盖更多得分维度，让文章更丰富
+          </div>
+        )}
       </div>
 
       <div style={DS.previewActions}>
@@ -800,13 +933,54 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
           </div>
         </div>
 
-        {/* Right legend — with draggable marker chips */}
+        {/* Right legend — two-tier: score dimensions (upper) + grammar types (lower) */}
         <div style={S.help}>
           <div style={S.helpBody}>
-            <div style={S.helpTitle}>📚 技巧图例（可拖入标记）</div>
+            {/* ── Tier 1: Score Dimensions 得分维度 ── */}
+            <div style={S.helpTitle}>🎯 得分维度（拖入标记）</div>
             <div style={DS.legendHint}>
-              👆 拖拽标签到句中标亮文字上，或直接点击文字标记
+              拖拽得分维度到句中对应文字，标记"为什么能得分"
             </div>
+            {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => (
+              <div
+                key={dimKey}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/score-dimension", dimKey);
+                  e.dataTransfer.effectAllowed = "copy";
+                  e.currentTarget.style.opacity = "0.5";
+                }}
+                onDragEnd={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                style={{
+                  ...DS.draggableLegendItem,
+                  borderLeft: `3.5px solid ${dim.color}`,
+                  background: dim.bg,
+                }}
+                title={`拖拽"${dim.label}"到句子中的对应文字\n${dim.desc}`}
+              >
+                <span style={{ fontSize:15 }}>{dim.icon}</span>
+                <span style={{ ...DS.legendLabel, fontWeight:700, color:dim.color }}>{dim.label}</span>
+                <span style={{ fontSize:10, color:"#94a3b8", marginLeft:"auto" }}>{dim.shortLabel}</span>
+                <span style={DS.dragHandle}>⠿</span>
+              </div>
+            ))}
+
+            {/* Divider */}
+            <div style={{
+              margin:"14px 0", borderTop:"2px solid #e2e8f0",
+              display:"flex", justifyContent:"center",
+            }}>
+              <span style={{
+                position:"relative", top:-10, background:"#fff",
+                padding:"0 8px", fontSize:10, color:"#94a3b8", fontWeight:600,
+              }}>
+                语法技巧标签
+              </span>
+            </div>
+
+            {/* ── Tier 2: Grammar Types 语法技巧 ── */}
             {Object.entries(HIGHLIGHT_TYPES).slice(0, 8).map(([key, meta]) => (
               <div
                 key={key}
@@ -1343,6 +1517,22 @@ function ReportScreen({ topic, sentences, fullEval, feedback, discoveryChoices, 
   const essay = [topic.opening, ...topic.sentences.map(s => sentences[s.id] || "")].filter(Boolean).join(" ");
   const wc = essay.trim().split(/\s+/).filter(w=>w.length>0).length;
 
+  // Compute dimension distribution from discovery choices if available
+  const dimTotal = { vocab: 0, syntax: 0, logic: 0, cognition: 0, emotion: 0 };
+  if (discoveryChoices) {
+    topic.sentences.forEach(s => {
+      const choice = discoveryChoices[s.id];
+      if (!choice) return;
+      const highlights = s.discovery[choice].highlights || [];
+      highlights.forEach(hl => {
+        const dim = TYPE_TO_DIMENSION[hl.type];
+        if (dim) dimTotal[dim]++;
+      });
+    });
+  }
+  const dimMax = Math.max(...Object.values(dimTotal), 1);
+  const dimActive = Object.values(dimTotal).filter(v => v > 0).length;
+
   return (
     <div style={{ fontFamily:"'Noto Sans SC','Segoe UI',sans-serif", background:"#f8fafc", minHeight:"100vh" }}>
       <div style={{ background:"linear-gradient(135deg,#14532d,#15803d)", padding:"24px 32px", color:"#fff", display:"flex", alignItems:"center", gap:16 }}>
@@ -1385,6 +1575,48 @@ function ReportScreen({ topic, sentences, fullEval, feedback, discoveryChoices, 
             ))}
           </div>
         </div>
+
+        {/* Five-Dimension Distribution (from discovery) */}
+        {discoveryChoices && (
+          <div style={{ background:"#fff", borderRadius:16, padding:20, boxShadow:"0 2px 12px rgba(0,0,0,0.06)" }}>
+            <div style={{ fontWeight:700, fontSize:14, color:"#1e293b", marginBottom:4 }}>🎯 认知发现 · 得分维度分布</div>
+            <div style={{ fontSize:12, color:"#64748b", marginBottom:14 }}>
+              你的发现版文章覆盖了 <strong>{dimActive}/5</strong> 个得分维度
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
+                const count = dimTotal[dimKey] || 0;
+                const barWidth = Math.round((count / dimMax) * 100);
+                return (
+                  <div key={dimKey} style={{ display:"flex", alignItems:"center", gap:10 }}>
+                    <div style={{ width:90, flexShrink:0, display:"flex", alignItems:"center", gap:4, fontSize:12 }}>
+                      <span>{dim.icon}</span>
+                      <span style={{ fontWeight:500, color:"#334155" }}>{dim.label}</span>
+                    </div>
+                    <div style={{ flex:1, height:14, background:"#f1f5f9", borderRadius:7, overflow:"hidden" }}>
+                      <div style={{
+                        height:"100%", width:`${barWidth}%`, borderRadius:7,
+                        background: count > 0 ? dim.color : "#e2e8f0",
+                        transition:"width 0.6s ease",
+                      }} />
+                    </div>
+                    <span style={{
+                      width:28, textAlign:"right", fontSize:12, fontWeight:700, flexShrink:0,
+                      color: count > 0 ? dim.color : "#94a3b8",
+                    }}>
+                      {count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            {dimActive < 3 && (
+              <div style={{ marginTop:12, padding:"8px 12px", background:"#fffbeb", borderRadius:8, fontSize:12, color:"#b45309", border:"1px solid #fde68a" }}>
+                💡 不同句子位置可侧重不同得分维度，尝试让全文覆盖更多维度以丰富表达层次
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Strengths & Weaknesses */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
@@ -1641,6 +1873,60 @@ const DS = {
   previewStyleTag: { display:"inline-block", color:"#fff", fontSize:9, padding:"1px 5px", borderRadius:4, marginRight:4, fontWeight:700, verticalAlign:"middle" },
   previewActions: { maxWidth:700, margin:"24px auto", display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap", padding:"0 32px 48px" },
   previewBtn: { color:"#fff", border:"none", borderRadius:12, padding:"14px 28px", cursor:"pointer", fontWeight:700, fontSize:14 },
+
+  // ── Preview dimension distribution card ──
+  previewDimCard: {
+    maxWidth:700, margin:"0 auto", background:"#fff", borderRadius:16,
+    padding:20, boxShadow:"0 2px 12px rgba(0,0,0,0.06)",
+  },
+  previewDimTitle: { fontWeight:700, fontSize:14, color:"#1e293b", marginBottom:4 },
+  previewDimSub: { fontSize:12, color:"#64748b", marginBottom:16 },
+  previewDimBars: { display:"flex", flexDirection:"column", gap:10 },
+  previewDimRow: { display:"flex", alignItems:"center", gap:10 },
+  previewDimLabel: { width:100, flexShrink:0, display:"flex", alignItems:"center", gap:6, fontSize:12 },
+  previewDimBarTrack: { flex:1, height:18, background:"#f1f5f9", borderRadius:9, overflow:"hidden" },
+  previewDimBarFill: { height:"100%", borderRadius:9, transition:"width 0.6s ease", minWidth:0 },
+  previewDimCount: { width:32, textAlign:"right", fontSize:13, fontWeight:600, flexShrink:0 },
+  previewDimTip: {
+    marginTop:14, padding:"10px 14px", background:"#fffbeb",
+    borderRadius:10, fontSize:12, color:"#b45309", lineHeight:1.5,
+    border:"1px solid #fde68a",
+  },
+
+  // ── Score Dimension Bar styles ──
+  dimensionBar: {
+    marginTop:12, paddingTop:14,
+    borderTop:"1.5px solid #f1f5f9",
+  },
+  dimensionBarLabel: {
+    fontSize:10, fontWeight:700, color:"#94a3b8",
+    letterSpacing:0.5, textTransform:"uppercase", marginBottom:8,
+  },
+  dimensionBarRow: {
+    display:"flex", gap:6,
+  },
+  dimensionBlock: {
+    flex:1, display:"flex", flexDirection:"column", alignItems:"center",
+    padding:"6px 4px", borderRadius:10,
+    fontSize:11, fontWeight:600,
+    transition:"all 0.25s ease",
+    minWidth:0,
+  },
+  dimensionBlockIcon: {
+    fontSize:13, lineHeight:1, marginBottom:1,
+  },
+  dimensionBlockLabel: {
+    fontSize:10, lineHeight:1, whiteSpace:"nowrap",
+  },
+  dimensionBlockCount: {
+    fontSize:9, fontWeight:800, marginTop:2,
+    background:"rgba(255,255,255,0.3)", borderRadius:6,
+    padding:"1px 5px", lineHeight:1,
+  },
+  dimensionBarSummary: {
+    marginTop:8, fontSize:11, color:"#15803d",
+    textAlign:"center", fontWeight:600,
+  },
 
   // Draggable legend items
 
