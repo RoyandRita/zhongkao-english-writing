@@ -319,35 +319,35 @@ Evaluate based on 中考 standards. Return JSON.`;
 // SCORE HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 const SCORE_META = {
-  3: { label:"优秀句", color:"#15803d", bg:"#dcfce7", icon:"🌟" },
-  2: { label:"良好句", color:"#1d4ed8", bg:"#dbeafe", icon:"👍" },
-  1: { label:"基础句", color:"#b45309", bg:"#fef3c7", icon:"⚠️" },
-  0: { label:"无效句", color:"#be123c", bg:"#ffe4e6", icon:"❌" },
+  3: { label:"优秀句", color:"#3b7d5a", bg:"#f0f7f2", icon:"🌟" },
+  2: { label:"良好句", color:"#4a6d8c", bg:"#f2f5f9", icon:"👍" },
+  1: { label:"基础句", color:"#8b6d3f", bg:"#faf7f0", icon:"⚠️" },
+  0: { label:"无效句", color:"#8c5a62", bg:"#faf5f6", icon:"❌" },
 };
 
 const HIGHLIGHT_TYPES = {
-  "non-finite":       { label:"非谓语动词", color:"#7c3aed", bg:"#f5f3ff" },
-  "adverb":           { label:"副词层", color:"#0891b2", bg:"#ecfeff" },
-  "non-restrictive":  { label:"非限定定语从句", color:"#c2410c", bg:"#fff7ed" },
-  "concrete-imagery": { label:"具象化描写", color:"#15803d", bg:"#f0fdf4" },
-  "change-verb":      { label:"Change核动词", color:"#b45309", bg:"#fffbeb" },
-  "mind-verb":        { label:"Mind核动词", color:"#1d4ed8", bg:"#eff6ff" },
-  "connector":        { label:"逻辑连接词", color:"#be123c", bg:"#fff1f2" },
-  "object-clause":    { label:"宾语从句", color:"#7e22ce", bg:"#fdf4ff" },
-  "concrete-feeling": { label:"具象感受词", color:"#0369a1", bg:"#f0f9ff" },
-  "specific-detail":  { label:"具体细节", color:"#4d7c0f", bg:"#f7fee7" },
-  "adverb-action":    { label:"副词+动作", color:"#0e7490", bg:"#ecfeff" },
-  "adj-noun":         { label:"形容词+名词修饰", color:"#9333ea", bg:"#faf5ff" },
+  "non-finite":       { label:"非谓语动词", color:"#5a7d9a", bg:"#f3f6fa" },
+  "adverb":           { label:"副词层", color:"#5a8a6c", bg:"#f2f8f4" },
+  "non-restrictive":  { label:"非限定定语从句", color:"#7a6358", bg:"#faf7f5" },
+  "concrete-imagery": { label:"具象化描写", color:"#7d6b72", bg:"#faf6f7" },
+  "change-verb":      { label:"Change核动词", color:"#7a6d96", bg:"#f6f4fa" },
+  "mind-verb":        { label:"Mind核动词", color:"#6d5f89", bg:"#f3f1f8" },
+  "connector":        { label:"逻辑连接词", color:"#8b6a5a", bg:"#faf7f3" },
+  "object-clause":    { label:"宾语从句", color:"#688bab", bg:"#f5f8fb" },
+  "concrete-feeling": { label:"具象感受词", color:"#8c5a62", bg:"#faf5f6" },
+  "specific-detail":  { label:"具体细节", color:"#7d8b5a", bg:"#f7f8f2" },
+  "adverb-action":    { label:"副词+动作", color:"#5a8a7d", bg:"#f2f8f5" },
+  "adj-noun":         { label:"形容词+名词修饰", color:"#6d8a7a", bg:"#f4f9f6" },
 };
 
 // ── Five Score Dimensions (得分点五维体系) ──
 // Each dimension answers "why this sentence scores" rather than "what grammar it has"
 const SCORE_DIMENSIONS = {
-  vocab:     { key:"vocab",     icon:"📗", label:"词汇亮点", shortLabel:"词汇", desc:"高级词汇·短语·搭配，体现词汇深度", color:"#16a34a", bg:"#f0fdf4", border:"#86efac" },
-  syntax:    { key:"syntax",    icon:"📘", label:"句法结构", shortLabel:"句法", desc:"从句·非谓语·倒装，体现句法多样", color:"#1d4ed8", bg:"#eff6ff", border:"#93c5fd" },
-  logic:     { key:"logic",     icon:"📙", label:"逻辑衔接", shortLabel:"逻辑", desc:"衔接词·转折·呼应，体现篇章逻辑", color:"#d97706", bg:"#fffbeb", border:"#fcd34d" },
-  cognition: { key:"cognition", icon:"📒", label:"认知升华", shortLabel:"认知", desc:"感悟·哲理·升华，体现思想深度", color:"#7c3aed", bg:"#f5f3ff", border:"#c4b5fd" },
-  emotion:   { key:"emotion",   icon:"📓", label:"情感真实", shortLabel:"情感", desc:"个人细节·感官，体现真实情感", color:"#be123c", bg:"#fff1f2", border:"#fda4af" },
+  vocab:     { key:"vocab",     icon:"📗", label:"词汇亮点", shortLabel:"词汇", desc:"高级词汇·短语·搭配，体现词汇深度", color:"#3b7d5a", bg:"#f0f7f2", border:"#c5dfce" },
+  syntax:    { key:"syntax",    icon:"📘", label:"句法结构", shortLabel:"句法", desc:"从句·非谓语·倒装，体现句法多样", color:"#4a6d8c", bg:"#f2f5f9", border:"#c8d6e4" },
+  logic:     { key:"logic",     icon:"📙", label:"逻辑衔接", shortLabel:"逻辑", desc:"衔接词·转折·呼应，体现篇章逻辑", color:"#8b6d3f", bg:"#faf7f0", border:"#e0d5c0" },
+  cognition: { key:"cognition", icon:"📒", label:"认知升华", shortLabel:"认知", desc:"感悟·哲理·升华，体现思想深度", color:"#675d8a", bg:"#f5f3fa", border:"#d5d0e8" },
+  emotion:   { key:"emotion",   icon:"📓", label:"情感真实", shortLabel:"情感", desc:"个人细节·感官，体现真实情感", color:"#8c5a62", bg:"#faf5f6", border:"#e0cdd2" },
 };
 
 // Map each grammar highlight type to its primary score dimension
@@ -393,8 +393,8 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
   }
 
   const sideLabel = side === "a" ? "A · 副词 + 非谓语侧重" : "B · 非限定从句 + 具象化侧重";
-  const sideColor = side === "a" ? "#0891b2" : "#c2410c";
-  const sideBg = side === "a" ? "#ecfeff" : "#fff7ed";
+  const sideColor = side === "a" ? "#4a7c8c" : "#8c6a5a";
+  const sideBg = side === "a" ? "#f3f7f9" : "#faf7f5";
   const sideEmoji = side === "a" ? "🔵" : "🟠";
 
   const totalClicked = highlights.filter((_, i) => clickedIds.has(i)).length;
@@ -446,12 +446,11 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
   return (
     <div style={{
       ...DS.sentenceCard,
-      borderColor: accentColor + "30",
-      background: "#fff",
+      background: side === "a" ? "#fafcfd" : "#fdfaf9",
     }}>
       {/* Side tag header */}
       <div style={DS.sentenceCardHeader}>
-        <span style={{ ...DS.sideTag, background: sideBg, color: sideColor, border: `1px solid ${sideColor}30` }}>
+        <span style={{ ...DS.sideTag, background: sideBg, color: sideColor, border: `1px solid ${sideColor}20` }}>
           {sideEmoji} {sideLabel}
         </span>
         <span style={DS.markCount}>
@@ -549,16 +548,19 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 key={dimKey}
                 style={{
                   ...DS.dimensionBlock,
-                  background: isHit ? dim.color : "#f1f5f9",
-                  color: isHit ? "#fff" : "#94a3b8",
-                  border: `1.5px solid ${isHit ? dim.border : "#e2e8f0"}`,
+                  background: isHit ? dim.bg : "#fafbfc",
+                  color: isHit ? dim.color : "#94a3b8",
+                  border: `1px solid ${isHit ? dim.border : "#e8ecf0"}`,
                   cursor: "default",
                 }}
                 title={`${dim.icon} ${dim.label}${isHit ? `：${count}处可得分点` : "：本句未涉及"}\n${dim.desc}`}
               >
                 <span style={DS.dimensionBlockIcon}>{dim.icon}</span>
-                <span style={DS.dimensionBlockLabel}>{dim.shortLabel}</span>
-                {isHit && <span style={DS.dimensionBlockCount}>{count}</span>}
+                {isHit ? (
+                  <span style={DS.dimensionBlockCount}>{count}</span>
+                ) : (
+                  <span style={DS.dimensionBlockLabel}>{dim.shortLabel}</span>
+                )}
               </div>
             );
           })}
@@ -955,8 +957,8 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                 }}
                 style={{
                   ...DS.draggableLegendItem,
-                  borderLeft: `3.5px solid ${dim.color}`,
                   background: dim.bg,
+                  border: `1px solid ${dim.border}`,
                 }}
                 title={`拖拽"${dim.label}"到句子中的对应文字\n${dim.desc}`}
               >
@@ -969,12 +971,12 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
 
             {/* Divider */}
             <div style={{
-              margin:"14px 0", borderTop:"2px solid #e2e8f0",
+              margin:"12px 0", borderTop:"1px solid #eef0f2",
               display:"flex", justifyContent:"center",
             }}>
               <span style={{
-                position:"relative", top:-10, background:"#fff",
-                padding:"0 8px", fontSize:10, color:"#94a3b8", fontWeight:600,
+                position:"relative", top:-8, background:"#fafbfc",
+                padding:"0 8px", fontSize:10, color:"#94a3b8", fontWeight:500,
               }}>
                 语法技巧标签
               </span>
@@ -996,8 +998,7 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                 style={DS.draggableLegendItem}
                 title={`拖拽 "${meta.label}" 到句子中的标亮区域`}
               >
-                <span style={{ ...DS.legendDot, background: meta.color }} />
-                <span style={DS.legendLabel}>{meta.label}</span>
+                <span style={{ ...DS.legendLabel, color: meta.color, fontWeight:600 }}>{meta.label}</span>
                 <span style={DS.dragHandle}>⠿</span>
               </div>
             ))}
@@ -1705,12 +1706,12 @@ const S = {
   helpToggle: { display:"flex", background:"rgba(255,255,255,0.15)", borderRadius:20, padding:2, gap:2 },
   helpBtn: { border:"none", borderRadius:18, padding:"4px 12px", cursor:"pointer", fontSize:11, color:"rgba(255,255,255,0.85)", background:"transparent" },
   body: { display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 52px)" },
-  nav: { width:156, background:"#fff", borderRight:"1px solid #e2e8f0", overflowY:"auto", padding:"12px 8px", flexShrink:0 },
+  nav: { width:148, background:"#fff", borderRight:"1px solid #eef0f2", overflowY:"auto", padding:"12px 8px", flexShrink:0 },
   navLabel: { fontSize:10, fontWeight:700, color:"#94a3b8", letterSpacing:1, padding:"0 6px 8px", textTransform:"uppercase" },
   navItem: { display:"flex", alignItems:"center", gap:6, padding:"7px 8px", borderRadius:8, marginBottom:3, border:"none", borderLeft:"3px solid transparent", cursor:"pointer", background:"transparent", width:"100%", textAlign:"left" },
   navNum: { width:22, height:22, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, flexShrink:0 },
   navRole: { flex:1, fontSize:11, color:"#475569" },
-  center: { flex:1, overflowY:"auto", padding:18, display:"flex", flexDirection:"column", gap:14 },
+  center: { flex:1, overflowY:"auto", padding:"20px 24px", display:"flex", flexDirection:"column", gap:16, maxWidth:820 },
   givenBox: { border:"2px solid", borderRadius:12, padding:"10px 14px", display:"flex", gap:10, alignItems:"flex-start" },
   givenTag: { color:"#fff", padding:"2px 10px", borderRadius:10, fontSize:11, fontWeight:700, whiteSpace:"nowrap", marginTop:1, flexShrink:0 },
   givenText: { fontSize:14, fontWeight:600, lineHeight:1.7 },
@@ -1741,10 +1742,10 @@ const S = {
   previewTitle: { fontWeight:700, fontSize:13, color:"#475569", marginBottom:10 },
   previewText: { fontSize:13, lineHeight:2.1 },
   previewWC: { fontSize:12, color:"#94a3b8", marginTop:10 },
-  help: { width:252, background:"#fff", borderLeft:"1px solid #e2e8f0", display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0 },
+  help: { width:260, background:"#fafbfc", borderLeft:"1px solid #eef0f2", display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0 },
   helpTabs: { display:"flex", borderBottom:"1px solid #e2e8f0", flexShrink:0 },
   helpTab: { flex:1, padding:"10px 2px", border:"none", borderBottom:"2px solid transparent", background:"none", cursor:"pointer", fontSize:11, fontWeight:600, color:"#94a3b8" },
-  helpBody: { padding:14, flex:1, overflowY:"auto" },
+  helpBody: { padding:"12px 14px", flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:10 },
   helpTitle: { fontSize:11, fontWeight:700, color:"#94a3b8", letterSpacing:0.5, marginBottom:10, textTransform:"uppercase" },
   chipRow: { display:"flex", flexWrap:"wrap", gap:5, marginBottom:8 },
   chip: { padding:"3px 10px", borderRadius:12, fontSize:11.5, fontWeight:500 },
@@ -1761,21 +1762,31 @@ const S = {
 const DS = {
   positionHeader: { display:"flex", alignItems:"center", gap:12, marginBottom:4 },
   positionBadge: { color:"#fff", padding:"4px 14px", borderRadius:10, fontSize:13, fontWeight:800 },
-  positionHint: { fontSize:12, color:"#64748b", lineHeight:1.6 },
+  positionHint: { fontSize:12, color:"#94a3b8", lineHeight:1.6, fontWeight:400 },
   compareCol: { display:"flex", flexDirection:"column", gap:0 },
-	  sentenceDivider: { display:"flex", alignItems:"center", gap:12, padding:"6px 0", margin:"4px 0" },
-	  dividerLine: { flex:1, height:1, background:"linear-gradient(to right, transparent, #e2e8f0, transparent)" },
-	  dividerText: { fontSize:11, color:"#94a3b8", fontWeight:600, whiteSpace:"nowrap" },
+	  sentenceDivider: { display:"flex", alignItems:"center", gap:12, padding:"8px 0", margin:"2px 0" },
+	  dividerLine: { flex:1, height:1, background:"linear-gradient(to right, transparent, #e8ecf0, transparent)" },
+	  dividerText: { fontSize:11.5, color:"#a8b4c2", fontWeight:500, whiteSpace:"nowrap" },
   sentenceCard: {
-    background:"#fff", borderRadius:14, padding:18, border:"2px solid",
-    boxShadow:"0 2px 8px rgba(0,0,0,0.04)", position:"relative",
+    background:"#fff", borderRadius:20, padding:"28px 32px", border:"none",
+    boxShadow:"0 1px 3px rgba(0,0,0,0.03)", position:"relative",
+  },
+  sentenceCardHeader: {
+    display:"flex", alignItems:"center", justifyContent:"space-between",
+    marginBottom:4, flexWrap:"wrap", gap:8,
+  },
+  markCount: {
+    fontSize:11, color:"#94a3b8", fontWeight:500,
   },
   sideTag: {
-    display:"inline-block", padding:"2px 10px", borderRadius:8,
-    fontSize:10, fontWeight:700, marginBottom:10, letterSpacing:0.5,
+    display:"inline-flex", alignItems:"center", gap:6,
+    padding:"4px 14px", borderRadius:20,
+    fontSize:11.5, fontWeight:600, marginBottom:16,
+    letterSpacing:"0.02em",
   },
   sentenceText: {
-    fontSize:14.5, lineHeight:2.1, color:"#1e293b", marginBottom:8,
+    fontSize:17, lineHeight:2.4, color:"#1a1a2e", marginBottom:12,
+    fontWeight:500, letterSpacing:"0.01em",
   },
   highlightZone: {
     padding:"1px 2px", borderRadius:3, margin:"0 1px",
@@ -1803,59 +1814,42 @@ const DS = {
   },
 
   markedLabelChip: {
-
-    display:"inline-flex", alignItems:"center", gap:6,
-
-    padding:"5px 10px", borderRadius:10,
-
-    fontSize:11.5, fontWeight:600,
-
-    cursor:"pointer", transition:"all 0.2s",
-
+    display:"inline-flex", alignItems:"center", gap:5,
+    padding:"4px 12px", borderRadius:20,
+    fontSize:11, fontWeight:500,
+    cursor:"pointer", transition:"all 0.15s ease",
     userSelect:"none",
-
   },
 
   markedLabelType: {
-
-    fontSize:10, padding:"1px 6px", borderRadius:6,
-
-    background:"rgba(255,255,255,0.7)", fontWeight:700,
-
+    fontSize:9.5, padding:"1px 6px", borderRadius:6,
+    background:"rgba(0,0,0,0.04)", fontWeight:600,
   },
 
   markedLabelText: {
-
     maxWidth:140, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-
   },
 
   markedLabelRemove: {
-
-    fontSize:14, fontWeight:700, opacity:0.5, marginLeft:2,
-
+    fontSize:14, fontWeight:500, opacity:0.35, marginLeft:2,
   },
 
   emptyMarkHint: {
-
-    marginTop:14, padding:"10px 14px", background:"#f8fafc",
-
-    borderRadius:10, fontSize:12, color:"#94a3b8",
-
-    textAlign:"center", lineHeight:1.6, border:"1px dashed #e2e8f0",
-
+    marginTop:18, padding:"12px 16px", background:"#fafbfc",
+    borderRadius:12, fontSize:12, color:"#94a3b8",
+    textAlign:"center", lineHeight:1.6, border:"1px dashed #e8ecf0",
   },
-  choiceRow: { display:"flex", flexDirection:"column", gap:10, marginTop:16 },
+  choiceRow: { display:"flex", flexDirection:"column", gap:10, marginTop:20 },
   choiceBtn: {
-    width:"100%", padding:"14px 20px", borderRadius:14, border:"none",
-    fontWeight:700, fontSize:13.5, transition:"all 0.25s",
+    width:"100%", padding:"12px 24px", borderRadius:12, border:"none",
+    fontWeight:600, fontSize:14, transition:"all 0.15s ease",
     display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-    letterSpacing:0.3, boxShadow:"0 2px 8px rgba(0,0,0,0.08)",
+    letterSpacing:"0.02em",
   },
   choiceHint: {
-    textAlign:"center", fontSize:12, color:"#b45309", marginTop:8,
-    background:"#fffbeb", padding:"10px 14px", borderRadius:10,
-    border:"1px solid #fde68a",
+    textAlign:"center", fontSize:12, color:"#8b6d3f", marginTop:10,
+    background:"#faf7f0", padding:"10px 14px", borderRadius:12,
+    border:"1px solid #e0d5c0",
   },
   navRow: { display:"flex", gap:8, marginTop:10, flexWrap:"wrap" },
 
@@ -1884,7 +1878,7 @@ const DS = {
   previewDimBars: { display:"flex", flexDirection:"column", gap:10 },
   previewDimRow: { display:"flex", alignItems:"center", gap:10 },
   previewDimLabel: { width:100, flexShrink:0, display:"flex", alignItems:"center", gap:6, fontSize:12 },
-  previewDimBarTrack: { flex:1, height:18, background:"#f1f5f9", borderRadius:9, overflow:"hidden" },
+  previewDimBarTrack: { flex:1, height:14, background:"#f3f4f6", borderRadius:7, overflow:"hidden" },
   previewDimBarFill: { height:"100%", borderRadius:9, transition:"width 0.6s ease", minWidth:0 },
   previewDimCount: { width:32, textAlign:"right", fontSize:13, fontWeight:600, flexShrink:0 },
   previewDimTip: {
@@ -1895,84 +1889,64 @@ const DS = {
 
   // ── Score Dimension Bar styles ──
   dimensionBar: {
-    marginTop:12, paddingTop:14,
-    borderTop:"1.5px solid #f1f5f9",
+    marginTop:16, paddingTop:16,
+    borderTop:"1px solid #f1f5f9",
+    display:"flex", alignItems:"center", justifyContent:"space-between",
+    flexWrap:"wrap", gap:8,
   },
   dimensionBarLabel: {
-    fontSize:10, fontWeight:700, color:"#94a3b8",
-    letterSpacing:0.5, textTransform:"uppercase", marginBottom:8,
+    fontSize:10.5, fontWeight:600, color:"#94a3b8",
+    letterSpacing:"0.03em", flexShrink:0,
   },
   dimensionBarRow: {
-    display:"flex", gap:6,
+    display:"flex", gap:8, flexWrap:"wrap", alignItems:"center",
   },
   dimensionBlock: {
-    flex:1, display:"flex", flexDirection:"column", alignItems:"center",
-    padding:"6px 4px", borderRadius:10,
+    display:"inline-flex", alignItems:"center", gap:4,
+    padding:"4px 10px", borderRadius:20,
     fontSize:11, fontWeight:600,
-    transition:"all 0.25s ease",
-    minWidth:0,
+    transition:"all 0.2s ease",
+    whiteSpace:"nowrap",
   },
   dimensionBlockIcon: {
-    fontSize:13, lineHeight:1, marginBottom:1,
+    fontSize:12, lineHeight:1,
   },
   dimensionBlockLabel: {
-    fontSize:10, lineHeight:1, whiteSpace:"nowrap",
+    fontSize:10.5, lineHeight:1,
   },
   dimensionBlockCount: {
-    fontSize:9, fontWeight:800, marginTop:2,
-    background:"rgba(255,255,255,0.3)", borderRadius:6,
-    padding:"1px 5px", lineHeight:1,
+    fontSize:9, fontWeight:700,
+    background:"rgba(0,0,0,0.06)", borderRadius:8,
+    padding:"1px 5px", lineHeight:1, marginLeft:1,
   },
   dimensionBarSummary: {
-    marginTop:8, fontSize:11, color:"#15803d",
-    textAlign:"center", fontWeight:600,
+    marginTop:6, fontSize:11, color:"#3b7d5a",
+    textAlign:"right", fontWeight:500,
+    width:"100%",
   },
 
   // Draggable legend items
 
 
   draggableLegendItem: {
-
-
-    display:"flex", alignItems:"center", gap:8, marginBottom:6,
-
-
-    padding:"8px 12px", borderRadius:10,
-
-
-    background:"#fff", border:"1.5px solid #e2e8f0",
-
-
-    cursor:"grab", transition:"all 0.2s",
-
-
-    userSelect:"none",
-
-
+    display:"flex", alignItems:"center", gap:8,
+    padding:"7px 12px", borderRadius:10,
+    background:"#fff", border:"1px solid #eef0f2",
+    cursor:"grab", transition:"all 0.15s ease",
+    userSelect:"none", marginBottom:0,
   },
 
 
   dragHandle: {
-
-
-    fontSize:12, color:"#cbd5e1", marginLeft:"auto", letterSpacing:1,
-
-
+    fontSize:11, color:"#d0d5dd", marginLeft:"auto", letterSpacing:1,
+    opacity:0.6,
   },
 
 
   legendHint: {
-
-
-    fontSize:11, color:"#94a3b8", marginBottom:12,
-
-
-    padding:"8px 10px", background:"#f8fafc", borderRadius:8,
-
-
-    lineHeight:1.5, textAlign:"center", border:"1px dashed #e2e8f0",
-
-
+    fontSize:11, color:"#94a3b8", marginBottom:8,
+    padding:"8px 10px", background:"#fafbfc", borderRadius:8,
+    lineHeight:1.5, textAlign:"center", border:"1px solid #eef0f2",
   },
 
 
@@ -1990,7 +1964,7 @@ const DS = {
   // Legend styles
   legendItem: { display:"flex", alignItems:"center", gap:8, marginBottom:6 },
   legendDot: { width:10, height:10, borderRadius:"50%", flexShrink:0 },
-  legendLabel: { fontSize:11, color:"#475569", fontWeight:500 },
+  legendLabel: { fontSize:11.5, color:"#475569", fontWeight:500 },
   legendCount: { background:"#f8fafc", borderRadius:12, padding:"12px 14px", fontSize:12, color:"#334155", lineHeight:1.6 },
 };
   // ── Reasoning Chain styles ──
