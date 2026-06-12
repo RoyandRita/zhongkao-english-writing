@@ -546,55 +546,85 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
           })}
         </div>
 
-        {/* Annotation chips — right column, hugs the card edge */}
-        {markedAnnotations.length > 0 && (
-          <div style={{
-            width: 152, flexShrink: 0,
-            display: "flex", flexDirection: "column", gap: tokens.space.sm,
-            alignItems: "flex-end",
-            marginRight: -12,  // bleed into card padding, touch the right edge
-          }}>
-            {markedAnnotations.map((ma) => (
-              <span
-                key={ma.hlIndex}
-                onClick={() => onToggle(ma.hlIndex)}
+        {/* Dimension legend — right column: 5 rows, left=dimension, right=grammar types */}
+        <div style={{
+          width: 168, flexShrink: 0,
+          marginRight: -16,
+        }}>
+          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
+            const dimAnnotations = markedAnnotations.filter(ma => ma.dimKey === dimKey);
+            return (
+              <div
+                key={dimKey}
                 style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: tokens.space.sm,
+                  padding: `${tokens.space.sm}px 0`,
+                  borderBottom: `1px solid ${tokens.color.border.subtle}`,
+                  minHeight: 28,
+                }}
+              >
+                {/* Left: dimension label */}
+                <span style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: tokens.space.xs,
-                  padding: "3px 10px",
-                  borderRadius: tokens.radius.pill,
+                  gap: 3,
+                  width: 48,
+                  flexShrink: 0,
                   fontSize: tokens.font.size.caption,
-                  fontWeight: tokens.font.weight.medium,
-                  lineHeight: 1.6,
-                  whiteSpace: "nowrap",
-                  cursor: "pointer",
-                  background: ma.dimMeta?.bg || ma.typeMeta.bg,
-                  color: ma.dimMeta?.color || ma.typeMeta.color,
-                  border: `1px solid ${(ma.dimMeta?.border || ma.typeMeta.color)}40`,
-                  transition: `all ${tokens.transition.fast}`,
-                  userSelect: "none",
-                }}
-                title={`${ma.dimMeta?.label || ""} — ${ma.typeMeta.label} — 点击移除`}
-              >
-                {ma.dimMeta && (
-                  <span style={{ fontSize: 12, lineHeight: 1 }}>{ma.dimMeta.icon}</span>
-                )}
-                <span style={{ fontWeight: tokens.font.weight.semibold }}>
-                  {ma.dimMeta?.shortLabel || ma.typeMeta.label}
-                </span>
-                <span style={{
-                  fontSize: tokens.font.size.caption,
-                  color: ma.typeMeta.color,
                   fontWeight: tokens.font.weight.semibold,
-                  opacity: 0.85,
+                  color: dimAnnotations.length > 0 ? dim.color : tokens.color.text.muted,
+                  opacity: dimAnnotations.length > 0 ? 1 : 0.45,
                 }}>
-                  {ma.typeMeta.label}
+                  <span style={{ fontSize: 12, lineHeight: 1 }}>{dim.icon}</span>
+                  <span>{dim.shortLabel}</span>
                 </span>
-              </span>
-            ))}
-          </div>
-        )}
+
+                {/* Right: grammar type pills for this dimension */}
+                <span style={{
+                  flex: 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 4,
+                }}>
+                  {dimAnnotations.length > 0 ? (
+                    dimAnnotations.map(ma => (
+                      <span
+                        key={ma.hlIndex}
+                        onClick={() => onToggle(ma.hlIndex)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          padding: "1px 6px",
+                          borderRadius: tokens.radius.pill,
+                          fontSize: tokens.font.size.caption,
+                          fontWeight: tokens.font.weight.semibold,
+                          lineHeight: 1.5,
+                          whiteSpace: "nowrap",
+                          cursor: "pointer",
+                          background: dim.bg,
+                          color: dim.color,
+                          border: `1px solid ${dim.border}`,
+                          userSelect: "none",
+                        }}
+                        title={`${ma.typeMeta.label} — 点击移除`}
+                      >
+                        {ma.typeMeta.label}
+                      </span>
+                    ))
+                  ) : (
+                    <span style={{
+                      fontSize: tokens.font.size.caption,
+                      color: tokens.color.text.faded,
+                      fontStyle: "italic",
+                    }}>—</span>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Footer — single compact hint line ── */}
