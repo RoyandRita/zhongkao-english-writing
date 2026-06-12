@@ -523,8 +523,9 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
         {/* Annotation chips — right column, fills the empty space */}
         {markedAnnotations.length > 0 && (
           <div style={{
-            width: 132, flexShrink: 0,
+            width: 148, flexShrink: 0,
             display: "flex", flexDirection: "column", gap: tokens.space.sm,
+            alignItems: "flex-end",
           }}>
             {markedAnnotations.map((ma) => (
               <span
@@ -546,7 +547,6 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                   border: `1px solid ${ma.typeMeta.color}40`,
                   transition: `all ${tokens.transition.fast}`,
                   userSelect: "none",
-                  alignSelf: "flex-start",
                 }}
                 title={`${ma.dimMeta?.label || ""} — ${ma.typeMeta.label} — 点击移除`}
               >
@@ -555,6 +555,14 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 )}
                 <span style={{ fontWeight: tokens.font.weight.semibold }}>
                   {ma.dimMeta?.shortLabel || ma.typeMeta.label}
+                </span>
+                <span style={{
+                  fontSize: 9,
+                  color: tokens.color.text.muted,
+                  borderLeft: `1px solid ${ma.typeMeta.color}40`,
+                  paddingLeft: 4,
+                }}>
+                  {ma.typeMeta.label}
                 </span>
               </span>
             ))}

@@ -47,7 +47,7 @@ const TOPICS = [
               },
               {
                 "start": 58,
-                "end": 101,
+                "end": 75,
                 "label": "非谓语 filling... — 伴随状语，补充心理感受",
                 "type": "non-finite"
               },
