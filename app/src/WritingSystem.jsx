@@ -913,9 +913,14 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
           </div>
         </div>
 
-        {/* Right panel — dimension→grammar legend + progress */}
-        <div style={S.help}>
-          <div style={S.helpBody}>
+        {/* Dimension legend — absolute right edge, no panel wrapper */}
+        <div style={{
+          position: "absolute", right: 0, top: 0, bottom: 0,
+          width: 252, overflowY: "auto",
+          padding: "16px 12px 16px 0",
+          display: "flex", flexDirection: "column", gap: 10,
+        }}>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
             {/* ── Dimension → Grammar mapping table ── */}
             <div style={S.helpTitle}>🎯 得分维度 · 拖入匹配</div>
             <div style={{ fontSize: tokens.font.size.caption, color: tokens.color.text.muted, marginBottom: tokens.space.lg, lineHeight: 1.5 }}>
@@ -1710,7 +1715,7 @@ const S = {
   progLabel: { fontSize: tokens.font.size.sm, color:tokens.color.overlay.white85 },
   helpToggle: { display:"flex", background:tokens.color.overlay.white15, borderRadius: tokens.radius.floating, padding:2, gap:2 },
   helpBtn: { border:"none", borderRadius: tokens.radius.section, padding:"4px 12px", cursor:"pointer", fontSize: tokens.font.size.caption, color:tokens.color.overlay.white85, background:"transparent" },
-  body: { display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 52px)" },
+  body: { display:"flex", flex:1, overflow:"hidden", height:"calc(100vh - 52px)", position:"relative" },
   nav: { width:148, background:tokens.color.card, borderRight: `1px solid ${tokens.color.border.light}`, overflowY:"auto", padding:"12px 8px", flexShrink:0 },
   navLabel: { fontSize: tokens.font.size.xs, fontWeight: tokens.font.weight.bold, color:tokens.color.text.muted, letterSpacing: tokens.font.letterSpacing.wider, padding:"0 6px 8px", textTransform:"uppercase" },
   navItem: { display:"flex", alignItems:"center", gap:6, padding:"7px 8px", borderRadius: tokens.radius.pill, marginBottom:3, border:"none", borderLeft:"3px solid transparent", cursor:"pointer", background:"transparent", width:"100%", textAlign:"left" },
@@ -1768,13 +1773,13 @@ const DS = {
   positionHeader: { display:"flex", alignItems:"center", gap: tokens.space.lg, marginBottom:4 },
   positionBadge: { color:tokens.color.card, padding:"4px 14px", borderRadius: tokens.radius.pill, fontSize: tokens.font.size.body, fontWeight:800 },
   positionHint: { fontSize: tokens.font.size.sm, color:tokens.color.text.muted, lineHeight: tokens.font.lineHeight.normal, fontWeight:400 },
-  compareCol: { display:"flex", flexDirection:"column", gap:0 },
-	  sentenceDivider: { display:"flex", alignItems:"center", gap: tokens.space.lg, padding:"8px 0", margin:"2px 0" },
+  compareCol: { display:"flex", flexDirection:"row", gap: tokens.space.xxl, alignItems:"flex-start" },
+	  sentenceDivider: { display:"flex", flexDirection:"column", alignItems:"center", gap: tokens.space.sm, padding:"0 4px", alignSelf:"stretch", justifyContent:"center" },
 	  dividerLine: { flex:1, height:1, background: `linear-gradient(to right, transparent, ${tokens.color.border.dashed}, transparent)` },
 	  dividerText: { fontSize: tokens.font.size.caption, color:tokens.color.text.muted, fontWeight: tokens.font.weight.medium, whiteSpace:"nowrap" },
   sentenceCard: {
-    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 32px 20px", border:"none",
-    boxShadow: tokens.shadow.hairline, position:"relative",
+    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 20px 20px", border:"none",
+    boxShadow: tokens.shadow.hairline, position:"relative", flex:1, minWidth:0,
   },
   sentenceCardHeader: {
     display:"flex", alignItems:"center", justifyContent:"space-between",
