@@ -426,15 +426,31 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
     setDragOverZone && setDragOverZone(null);
   };
 
+  const [wrongFlash, setWrongFlash] = useState(null); // hlIndex of wrong drop, for red flash
+
   const handleDrop = (e, hlIndex) => {
     e.preventDefault();
     setDragOverZone && setDragOverZone(null);
-    // Accept both grammar types and score dimensions
     const dragType = e.dataTransfer.getData("application/highlight-type")
                   || e.dataTransfer.getData("application/score-dimension");
-    if (dragType) {
-      onDrop && onDrop(hlIndex, dragType);
+    if (!dragType) return;
+
+    // If a score dimension is dragged: validate it matches this highlight's expected dimension
+    const isGrammarType = HIGHLIGHT_TYPES[dragType] !== undefined;
+    const isScoreDim = SCORE_DIMENSIONS[dragType] !== undefined;
+
+    if (isScoreDim) {
+      const hl = sortedHL[hlIndex];
+      const expectedDim = TYPE_TO_DIMENSION[hl.type];
+      if (dragType !== expectedDim) {
+        // Wrong match — reject drop, capsule returns to origin (browser default)
+        setWrongFlash(hlIndex);
+        setTimeout(() => setWrongFlash(null), 500);
+        return;
+      }
     }
+    // Correct match (or grammar type dragged — always accepted)
+    onDrop && onDrop(hlIndex, dragType);
   };
 
   // Build ordered list of marked annotations (preserve text order for chip row)
@@ -478,6 +494,7 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
             }
             const isClicked = clickedIds.has(seg.hlIndex);
             const isDragOver = dragOverZone === `${side}-${seg.hlIndex}`;
+            const isWrong = wrongFlash === seg.hlIndex;
             const typeMeta = HIGHLIGHT_TYPES[seg.type] || { color: accentColor, bg: accentColor + "20" };
 
             return (
@@ -489,26 +506,35 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 onDrop={(e) => handleDrop(e, seg.hlIndex)}
                 style={{
                   ...DS.highlightZone,
-                  background: isDragOver
-                    ? typeMeta.bg
-                    : isClicked
-                      ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
-                      : "transparent",
-                  borderBottom: isClicked
-                    ? `3px solid ${typeMeta.color}`
+                  background: isWrong
+                    ? tokens.color.semantic.danger.bg
                     : isDragOver
-                      ? `3px dashed ${typeMeta.color}`
-                      : `2px dotted ${tokens.color.text.faded}`,
+                      ? typeMeta.bg
+                      : isClicked
+                        ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
+                        : "transparent",
+                  borderBottom: isWrong
+                    ? `3px solid ${tokens.color.semantic.danger.fg}`
+                    : isClicked
+                      ? `3px solid ${typeMeta.color}`
+                      : isDragOver
+                        ? `3px dashed ${typeMeta.color}`
+                        : `2px dotted ${tokens.color.text.faded}`,
                   cursor: "pointer",
-                  borderRadius: isClicked || isDragOver ? tokens.radius.tight : 3,
-                  boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
-                  transform: isDragOver ? "scale(1.04)" : "scale(1)",
-                  transition: `all ${tokens.transition.normal}`,
+                  borderRadius: isClicked || isDragOver || isWrong ? tokens.radius.tight : 3,
+                  boxShadow: isWrong
+                    ? `0 0 0 6px ${tokens.color.semantic.danger.bg}`
+                    : isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
+                  transform: isDragOver ? "scale(1.04)" : isWrong ? "scale(0.96)" : "scale(1)",
+                  transition: `all ${tokens.transition.fast}`,
                   userSelect: "none",
+                  animation: isWrong ? "none" : undefined,
                 }}
                 title={
-                  isClicked
-                    ? `✓ ${typeMeta.label} — 点击取消`
+                  isWrong
+                    ? "❌ 维度不匹配 — 胶囊已返回，再试一次"
+                    : isClicked
+                      ? `✓ ${typeMeta.label} — 点击取消`
                     : isDragOver
                       ? "松开放置得分维度"
                       : "👆 点击标记，或从右侧拖入维度标签"
