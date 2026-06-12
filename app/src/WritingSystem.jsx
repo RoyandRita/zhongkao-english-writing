@@ -520,12 +520,13 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
           })}
         </div>
 
-        {/* Annotation chips — right column, fills the empty space */}
+        {/* Annotation chips — right column, hugs the card edge */}
         {markedAnnotations.length > 0 && (
           <div style={{
-            width: 148, flexShrink: 0,
+            width: 152, flexShrink: 0,
             display: "flex", flexDirection: "column", gap: tokens.space.sm,
             alignItems: "flex-end",
+            marginRight: -12,  // bleed into card padding, touch the right edge
           }}>
             {markedAnnotations.map((ma) => (
               <span
@@ -534,17 +535,17 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 4,
-                  padding: "2px 8px",
+                  gap: tokens.space.xs,
+                  padding: "3px 10px",
                   borderRadius: tokens.radius.pill,
                   fontSize: tokens.font.size.caption,
                   fontWeight: tokens.font.weight.medium,
-                  lineHeight: 1.5,
+                  lineHeight: 1.6,
                   whiteSpace: "nowrap",
                   cursor: "pointer",
-                  background: ma.typeMeta.bg,
-                  color: ma.typeMeta.color,
-                  border: `1px solid ${ma.typeMeta.color}40`,
+                  background: ma.dimMeta?.bg || ma.typeMeta.bg,
+                  color: ma.dimMeta?.color || ma.typeMeta.color,
+                  border: `1px solid ${(ma.dimMeta?.border || ma.typeMeta.color)}40`,
                   transition: `all ${tokens.transition.fast}`,
                   userSelect: "none",
                 }}
@@ -557,10 +558,10 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                   {ma.dimMeta?.shortLabel || ma.typeMeta.label}
                 </span>
                 <span style={{
-                  fontSize: 9,
-                  color: tokens.color.text.muted,
-                  borderLeft: `1px solid ${ma.typeMeta.color}40`,
-                  paddingLeft: 4,
+                  fontSize: tokens.font.size.caption,
+                  color: ma.typeMeta.color,
+                  fontWeight: tokens.font.weight.semibold,
+                  opacity: 0.85,
                 }}>
                   {ma.typeMeta.label}
                 </span>
@@ -1782,7 +1783,7 @@ const DS = {
 	  dividerLine: { flex:1, height:1, background: `linear-gradient(to right, transparent, ${tokens.color.border.dashed}, transparent)` },
 	  dividerText: { fontSize: tokens.font.size.caption, color:tokens.color.text.muted, fontWeight: tokens.font.weight.medium, whiteSpace:"nowrap" },
   sentenceCard: {
-    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 32px 20px", border:"none",
+    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 16px 20px 32px", border:"none",
     boxShadow: tokens.shadow.hairline, position:"relative",
   },
   sentenceCardHeader: {
