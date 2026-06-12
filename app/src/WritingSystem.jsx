@@ -968,7 +968,7 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                         border: `1px solid ${hasAny ? dim.border : tokens.color.border.subtle}`,
                         marginBottom: tokens.space.xs,
                         cursor: "grab",
-                        opacity: hasAny ? 1 : 0.45,
+                        opacity: hasAny ? 1 : 0.65,
                         userSelect: "none",
                       }}
                       title={`拖拽"${dim.label}"到句子中对应文字`}
@@ -992,7 +992,7 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                             background: isMarked ? dim.bg : "transparent",
                             color: dim.color,
                             border: `1px solid ${isMarked ? dim.border : dim.color}30`,
-                            opacity: isMarked ? 1 : 0.35,
+                            opacity: isMarked ? 1 : 0.6,
                             userSelect: "none",
                           }}>
                             {g.label}
@@ -1747,7 +1747,7 @@ const S = {
   previewTitle: { fontWeight: tokens.font.weight.bold, fontSize: tokens.font.size.body, color:tokens.color.text.secondary, marginBottom:10 },
   previewText: { fontSize: tokens.font.size.body, lineHeight:2.1 },
   previewWC: { fontSize: tokens.font.size.sm, color:tokens.color.text.muted, marginTop:10 },
-  help: { width:260, background:tokens.color.subtle, borderLeft: `1px solid ${tokens.color.border.light}`, display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0 },
+  help: { width:260, background:"#f4f6f9", borderLeft: `1.5px solid ${tokens.color.border.default}`, display:"flex", flexDirection:"column", overflowY:"auto", flexShrink:0 },
   helpTabs: { display:"flex", borderBottom: `1px solid ${tokens.color.border.default}`, flexShrink:0 },
   helpTab: { flex:1, padding:"10px 2px", border:"none", borderBottom:"2px solid transparent", background:"none", cursor:"pointer", fontSize: tokens.font.size.caption, fontWeight: tokens.font.weight.semibold, color:tokens.color.text.muted },
   helpBody: { padding:"12px 14px", flex:1, overflowY:"auto", display:"flex", flexDirection:"column", gap:10 },
