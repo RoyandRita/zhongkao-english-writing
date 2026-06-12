@@ -70,7 +70,7 @@ const TOPICS = [
               },
               {
                 "start": 29,
-                "end": 71,
+                "end": 59,
                 "label": "非限定定语从句 , which... — 补充春天的特征",
                 "type": "non-restrictive"
               },

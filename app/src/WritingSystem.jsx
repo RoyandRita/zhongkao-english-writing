@@ -374,20 +374,28 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
   const sortedHL = [...highlights].sort((a,b) => a.start - b.start);
 
   // Build segments array: { text, isHighlight, hlIndex, type, label }
+  // Overlapping highlights are handled: text is never duplicated.
+  // When two highlights overlap, the later one only gets the non-overlapping tail.
   const segments = [];
   let cursor = 0;
   sortedHL.forEach((hl, idx) => {
     if (hl.start > cursor) {
+      // Normal gap: non-highlight text → highlight segment
       segments.push({ text: text.slice(cursor, hl.start), isHighlight: false });
+      segments.push({
+        text: text.slice(hl.start, hl.end),
+        isHighlight: true, hlIndex: idx, type: hl.type, label: hl.label,
+      });
+      cursor = hl.end;
+    } else if (hl.end > cursor) {
+      // Overlap: only render the non-overlapping tail portion
+      segments.push({
+        text: text.slice(cursor, hl.end),
+        isHighlight: true, hlIndex: idx, type: hl.type, label: hl.label,
+      });
+      cursor = hl.end;
     }
-    segments.push({
-      text: text.slice(hl.start, hl.end),
-      isHighlight: true,
-      hlIndex: idx,
-      type: hl.type,
-      label: hl.label,
-    });
-    cursor = hl.end;
+    // else: fully contained in previous highlight — skip, no duplication
   });
   if (cursor < text.length) {
     segments.push({ text: text.slice(cursor), isHighlight: false });
@@ -459,105 +467,100 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
         </span>
       </div>
 
-      {/* ── Sentence text — the hero. All spans display:inline so words never split ── */}
-      <div style={DS.sentenceText}>
-        {segments.map((seg, i) => {
-          if (!seg.isHighlight) {
-            return <span key={i} style={{ color: tokens.color.text.primary }}>{seg.text}</span>;
-          }
-          const isClicked = clickedIds.has(seg.hlIndex);
-          const isDragOver = dragOverZone === `${side}-${seg.hlIndex}`;
-          const typeMeta = HIGHLIGHT_TYPES[seg.type] || { color: accentColor, bg: accentColor + "20" };
+      {/* ── Content row: sentence left + annotation chips right ── */}
+      <div style={{ display: "flex", gap: tokens.space.xxxl, alignItems: "flex-start" }}>
 
-          return (
-            <span
-              key={i}
-              onClick={() => onToggle(seg.hlIndex)}
-              onDragOver={(e) => handleDragOver(e, seg.hlIndex)}
-              onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, seg.hlIndex)}
-              style={{
-                ...DS.highlightZone,
-                background: isDragOver
-                  ? typeMeta.bg
-                  : isClicked
-                    ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
-                    : "transparent",
-                borderBottom: isClicked
-                  ? `3px solid ${typeMeta.color}`
-                  : isDragOver
-                    ? `3px dashed ${typeMeta.color}`
-                    : `2px dotted ${tokens.color.text.faded}`,
-                cursor: "pointer",
-                borderRadius: isClicked || isDragOver ? tokens.radius.tight : 3,
-                boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
-                transform: isDragOver ? "scale(1.04)" : "scale(1)",
-                transition: `all ${tokens.transition.normal}`,
-                userSelect: "none",
-                // No display override — stays inline, words flow naturally
-              }}
-              title={
-                isClicked
-                  ? `✓ ${typeMeta.label} — 点击取消`
-                  : isDragOver
-                    ? "松开放置得分维度"
-                    : "👆 点击标记，或从右侧拖入维度标签"
-              }
-            >
-              {seg.text}
-            </span>
-          );
-        })}
-      </div>
+        {/* Sentence text — the hero. All spans display:inline so words never split */}
+        <div style={{ ...DS.sentenceText, flex: 1, minWidth: 0 }}>
+          {segments.map((seg, i) => {
+            if (!seg.isHighlight) {
+              return <span key={i} style={{ color: tokens.color.text.primary }}>{seg.text}</span>;
+            }
+            const isClicked = clickedIds.has(seg.hlIndex);
+            const isDragOver = dragOverZone === `${side}-${seg.hlIndex}`;
+            const typeMeta = HIGHLIGHT_TYPES[seg.type] || { color: accentColor, bg: accentColor + "20" };
 
-      {/* ── Annotation chip row — compact pills below sentence, in text order ── */}
-      {markedAnnotations.length > 0 && (
-        <div style={{
-          display: "flex", flexWrap: "wrap", gap: tokens.space.md,
-          paddingBottom: tokens.space.lg,
-        }}>
-          {markedAnnotations.map((ma) => (
-            <span
-              key={ma.hlIndex}
-              onClick={() => onToggle(ma.hlIndex)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "2px 8px",
-                borderRadius: tokens.radius.pill,
-                fontSize: tokens.font.size.caption,
-                fontWeight: tokens.font.weight.medium,
-                lineHeight: 1.5,
-                whiteSpace: "nowrap",
-                cursor: "pointer",
-                background: ma.typeMeta.bg,
-                color: ma.typeMeta.color,
-                border: `1px solid ${ma.typeMeta.color}40`,
-                transition: `all ${tokens.transition.fast}`,
-                userSelect: "none",
-              }}
-              title={`${ma.dimMeta?.label || ""} — ${ma.typeMeta.label} — 点击移除`}
-            >
-              {ma.dimMeta && (
-                <span style={{ fontSize: 12, lineHeight: 1 }}>{ma.dimMeta.icon}</span>
-              )}
-              <span style={{ fontWeight: tokens.font.weight.semibold }}>
-                {ma.dimMeta?.shortLabel || ma.typeMeta.label}
+            return (
+              <span
+                key={i}
+                onClick={() => onToggle(seg.hlIndex)}
+                onDragOver={(e) => handleDragOver(e, seg.hlIndex)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, seg.hlIndex)}
+                style={{
+                  ...DS.highlightZone,
+                  background: isDragOver
+                    ? typeMeta.bg
+                    : isClicked
+                      ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
+                      : "transparent",
+                  borderBottom: isClicked
+                    ? `3px solid ${typeMeta.color}`
+                    : isDragOver
+                      ? `3px dashed ${typeMeta.color}`
+                      : `2px dotted ${tokens.color.text.faded}`,
+                  cursor: "pointer",
+                  borderRadius: isClicked || isDragOver ? tokens.radius.tight : 3,
+                  boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
+                  transform: isDragOver ? "scale(1.04)" : "scale(1)",
+                  transition: `all ${tokens.transition.normal}`,
+                  userSelect: "none",
+                }}
+                title={
+                  isClicked
+                    ? `✓ ${typeMeta.label} — 点击取消`
+                    : isDragOver
+                      ? "松开放置得分维度"
+                      : "👆 点击标记，或从右侧拖入维度标签"
+                }
+              >
+                {seg.text}
               </span>
-              <span style={{
-                fontSize: tokens.font.size.caption,
-                color: tokens.color.text.muted,
-                maxWidth: 120,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}>
-                {ma.text}
-              </span>
-            </span>
-          ))}
+            );
+          })}
         </div>
-      )}
+
+        {/* Annotation chips — right column, fills the empty space */}
+        {markedAnnotations.length > 0 && (
+          <div style={{
+            width: 132, flexShrink: 0,
+            display: "flex", flexDirection: "column", gap: tokens.space.sm,
+          }}>
+            {markedAnnotations.map((ma) => (
+              <span
+                key={ma.hlIndex}
+                onClick={() => onToggle(ma.hlIndex)}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "2px 8px",
+                  borderRadius: tokens.radius.pill,
+                  fontSize: tokens.font.size.caption,
+                  fontWeight: tokens.font.weight.medium,
+                  lineHeight: 1.5,
+                  whiteSpace: "nowrap",
+                  cursor: "pointer",
+                  background: ma.typeMeta.bg,
+                  color: ma.typeMeta.color,
+                  border: `1px solid ${ma.typeMeta.color}40`,
+                  transition: `all ${tokens.transition.fast}`,
+                  userSelect: "none",
+                  alignSelf: "flex-start",
+                }}
+                title={`${ma.dimMeta?.label || ""} — ${ma.typeMeta.label} — 点击移除`}
+              >
+                {ma.dimMeta && (
+                  <span style={{ fontSize: 12, lineHeight: 1 }}>{ma.dimMeta.icon}</span>
+                )}
+                <span style={{ fontWeight: tokens.font.weight.semibold }}>
+                  {ma.dimMeta?.shortLabel || ma.typeMeta.label}
+                </span>
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* ── Footer — single compact hint line ── */}
       <div style={{
@@ -1788,7 +1791,7 @@ const DS = {
     letterSpacing: tokens.font.letterSpacing.normal,
   },
   sentenceText: {
-    fontSize: 20, lineHeight: 2.0, color: tokens.color.text.primary,
+    fontSize: 20, lineHeight: 2.6, color: tokens.color.text.primary,
     fontWeight: tokens.font.weight.medium, letterSpacing: tokens.font.letterSpacing.tight,
     paddingBottom: tokens.space.xxl,
   },
