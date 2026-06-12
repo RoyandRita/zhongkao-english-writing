@@ -453,18 +453,22 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
     onDrop && onDrop(hlIndex, dragType);
   };
 
-  // Build ordered list of marked annotations (preserve text order for chip row)
-  const markedAnnotations = [];
-  sortedHL.forEach((hl, idx) => {
-    if (clickedIds.has(idx)) {
-      const dimKey = TYPE_TO_DIMENSION[hl.type];
-      const dimMeta = dimKey ? SCORE_DIMENSIONS[dimKey] : null;
-      const typeMeta = HIGHLIGHT_TYPES[hl.type] || { color: accentColor, bg: accentColor + "20" };
-      markedAnnotations.push({
-        hlIndex: idx, text: hl.label.split("—")[0]?.trim() || text.slice(hl.start, hl.end),
-        dimKey, dimMeta, typeMeta,
-      });
+  // Build reverse mapping: dimension → grammar types present in this sentence
+  const dimToGrammar = {};
+  sortedHL.forEach(hl => {
+    const dimKey = TYPE_TO_DIMENSION[hl.type];
+    if (!dimKey) return;
+    if (!dimToGrammar[dimKey]) dimToGrammar[dimKey] = [];
+    if (!dimToGrammar[dimKey].find(g => g.type === hl.type)) {
+      const tm = HIGHLIGHT_TYPES[hl.type];
+      dimToGrammar[dimKey].push({ type: hl.type, label: tm?.label || hl.type, color: tm?.color, bg: tm?.bg });
     }
+  });
+
+  // Which grammar types have been marked (for highlight vs dim)
+  const markedTypes = new Set();
+  sortedHL.forEach((hl, idx) => {
+    if (clickedIds.has(idx)) markedTypes.add(hl.type);
   });
 
   return (
@@ -546,13 +550,14 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
           })}
         </div>
 
-        {/* Dimension legend — right column: 5 rows, left=dimension, right=grammar types */}
+        {/* Dimension legend — always visible, left=dimension, right=grammar types */}
         <div style={{
           width: 168, flexShrink: 0,
           marginRight: -16,
         }}>
           {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
-            const dimAnnotations = markedAnnotations.filter(ma => ma.dimKey === dimKey);
+            const grammars = dimToGrammar[dimKey] || [];
+            const hasAny = grammars.length > 0;
             return (
               <div
                 key={dimKey}
@@ -569,50 +574,51 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
                 <span style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 3,
-                  width: 48,
+                  gap: 2,
+                  width: 46,
                   flexShrink: 0,
                   fontSize: tokens.font.size.caption,
                   fontWeight: tokens.font.weight.semibold,
-                  color: dimAnnotations.length > 0 ? dim.color : tokens.color.text.muted,
-                  opacity: dimAnnotations.length > 0 ? 1 : 0.45,
+                  color: hasAny ? dim.color : tokens.color.text.muted,
+                  opacity: hasAny ? 1 : 0.4,
                 }}>
-                  <span style={{ fontSize: 12, lineHeight: 1 }}>{dim.icon}</span>
+                  <span style={{ fontSize: 11, lineHeight: 1 }}>{dim.icon}</span>
                   <span>{dim.shortLabel}</span>
                 </span>
 
-                {/* Right: grammar type pills for this dimension */}
+                {/* Right: grammar type pills — always shown, marked=full, unmarked=dim */}
                 <span style={{
                   flex: 1,
                   display: "flex",
                   flexWrap: "wrap",
                   gap: 4,
                 }}>
-                  {dimAnnotations.length > 0 ? (
-                    dimAnnotations.map(ma => (
-                      <span
-                        key={ma.hlIndex}
-                        onClick={() => onToggle(ma.hlIndex)}
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          padding: "1px 6px",
-                          borderRadius: tokens.radius.pill,
-                          fontSize: tokens.font.size.caption,
-                          fontWeight: tokens.font.weight.semibold,
-                          lineHeight: 1.5,
-                          whiteSpace: "nowrap",
-                          cursor: "pointer",
-                          background: dim.bg,
-                          color: dim.color,
-                          border: `1px solid ${dim.border}`,
-                          userSelect: "none",
-                        }}
-                        title={`${ma.typeMeta.label} — 点击移除`}
-                      >
-                        {ma.typeMeta.label}
-                      </span>
-                    ))
+                  {hasAny ? (
+                    grammars.map(g => {
+                      const isMarked = markedTypes.has(g.type);
+                      return (
+                        <span
+                          key={g.type}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "1px 6px",
+                            borderRadius: tokens.radius.pill,
+                            fontSize: tokens.font.size.caption,
+                            fontWeight: tokens.font.weight.semibold,
+                            lineHeight: 1.5,
+                            whiteSpace: "nowrap",
+                            background: isMarked ? dim.bg : "transparent",
+                            color: isMarked ? dim.color : dim.color,
+                            border: `1px solid ${isMarked ? dim.border : dim.color}30`,
+                            opacity: isMarked ? 1 : 0.35,
+                            userSelect: "none",
+                          }}
+                        >
+                          {g.label}
+                        </span>
+                      );
+                    })
                   ) : (
                     <span style={{
                       fontSize: tokens.font.size.caption,
