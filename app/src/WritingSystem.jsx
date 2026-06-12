@@ -950,45 +950,45 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                 const grammars = dimToG[dimKey] || [];
                 const hasAny = grammars.length > 0;
                 return (
-                  <div key={dimKey} style={{
-                    marginBottom: tokens.space.lg,
-                  }}>
-                    {/* Dimension row — draggable */}
-                    <div
-                      draggable
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("application/score-dimension", dimKey);
-                        e.dataTransfer.effectAllowed = "copy";
-                      }}
-                      style={{
-                        display: "flex", alignItems: "center", gap: tokens.space.sm,
-                        padding: `${tokens.space.xs}px ${tokens.space.sm}px`,
-                        borderRadius: tokens.radius.pill,
-                        background: hasAny ? dim.bg : tokens.color.subtle,
-                        border: `1px solid ${hasAny ? dim.border : tokens.color.border.subtle}`,
-                        marginBottom: tokens.space.xs,
-                        cursor: "grab",
-                        opacity: hasAny ? 1 : 0.65,
-                        userSelect: "none",
-                      }}
-                      title={`拖拽"${dim.label}"到句子中对应文字`}
-                    >
-                      <span style={{ fontSize: 13, lineHeight: 1 }}>{dim.icon}</span>
-                      <span style={{ fontSize: tokens.font.size.sm, fontWeight: tokens.font.weight.bold, color: hasAny ? dim.color : tokens.color.text.muted, flex: 1 }}>
+                  <div
+                    key={dimKey}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("application/score-dimension", dimKey);
+                      e.dataTransfer.effectAllowed = "copy";
+                    }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: tokens.space.sm,
+                      padding: `${tokens.space.xs}px ${tokens.space.sm}px`,
+                      marginBottom: tokens.space.sm,
+                      borderRadius: tokens.radius.pill,
+                      background: hasAny ? dim.bg : tokens.color.subtle,
+                      border: `1px solid ${hasAny ? dim.border : tokens.color.border.light}`,
+                      cursor: "grab",
+                      opacity: hasAny ? 1 : 0.65,
+                      userSelect: "none",
+                      minHeight: 26,
+                    }}
+                    title={`拖拽"${dim.label}"到句子中对应文字`}
+                  >
+                    {/* Left: icon + label */}
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, flexShrink:0 }}>
+                      <span style={{ fontSize: 12, lineHeight: 1 }}>{dim.icon}</span>
+                      <span style={{ fontSize: tokens.font.size.caption, fontWeight: tokens.font.weight.bold, color: hasAny ? dim.color : tokens.color.text.muted }}>
                         {dim.shortLabel}
                       </span>
-                      <span style={{ fontSize: 9, color: tokens.color.text.faded }}>⠿</span>
-                    </div>
-                    {/* Grammar types under this dimension */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, paddingLeft: 4 }}>
+                    </span>
+
+                    {/* Right: grammar type pills — pushed to far right */}
+                    <span style={{ display:"flex", flexWrap:"wrap", gap:3, justifyContent:"flex-end", flex:1, minWidth:0 }}>
                       {hasAny ? grammars.map(g => {
                         const isMarked = marked.has(g.type);
                         return (
                           <span key={g.type} style={{
                             display: "inline-flex", alignItems: "center",
-                            padding: "1px 6px", borderRadius: tokens.radius.pill,
+                            padding: "1px 5px", borderRadius: tokens.radius.pill,
                             fontSize: tokens.font.size.caption, fontWeight: tokens.font.weight.semibold,
-                            lineHeight: 1.5, whiteSpace: "nowrap",
+                            lineHeight: 1.4, whiteSpace: "nowrap",
                             background: isMarked ? dim.bg : "transparent",
                             color: dim.color,
                             border: `1px solid ${isMarked ? dim.border : dim.color}30`,
@@ -1001,7 +1001,7 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
                       }) : (
                         <span style={{ fontSize: tokens.font.size.caption, color: tokens.color.text.faded, fontStyle: "italic" }}>—</span>
                       )}
-                    </div>
+                    </span>
                   </div>
                 );
               });
