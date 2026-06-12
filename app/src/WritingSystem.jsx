@@ -453,23 +453,6 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
     onDrop && onDrop(hlIndex, dragType);
   };
 
-  // Build reverse mapping: dimension → grammar types present in this sentence
-  const dimToGrammar = {};
-  sortedHL.forEach(hl => {
-    const dimKey = TYPE_TO_DIMENSION[hl.type];
-    if (!dimKey) return;
-    if (!dimToGrammar[dimKey]) dimToGrammar[dimKey] = [];
-    if (!dimToGrammar[dimKey].find(g => g.type === hl.type)) {
-      const tm = HIGHLIGHT_TYPES[hl.type];
-      dimToGrammar[dimKey].push({ type: hl.type, label: tm?.label || hl.type, color: tm?.color, bg: tm?.bg });
-    }
-  });
-
-  // Which grammar types have been marked (for highlight vs dim)
-  const markedTypes = new Set();
-  sortedHL.forEach((hl, idx) => {
-    if (clickedIds.has(idx)) markedTypes.add(hl.type);
-  });
 
   return (
     <div style={{
@@ -487,11 +470,11 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
         </span>
       </div>
 
-      {/* ── Content row: sentence left + annotation chips right ── */}
-      <div style={{ display: "flex", gap: tokens.space.xxxl, alignItems: "flex-start" }}>
+      {/* ── Content row: sentence fills the card ── */}
+      <div>
 
         {/* Sentence text — the hero. All spans display:inline so words never split */}
-        <div style={{ ...DS.sentenceText, flex: 1, minWidth: 0 }}>
+        <div style={DS.sentenceText}>
           {segments.map((seg, i) => {
             if (!seg.isHighlight) {
               return <span key={i} style={{ color: tokens.color.text.primary }}>{seg.text}</span>;
@@ -546,88 +529,6 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
               >
                 {seg.text}
               </span>
-            );
-          })}
-        </div>
-
-        {/* Dimension legend — always visible, left=dimension, right=grammar types */}
-        <div style={{
-          width: 168, flexShrink: 0,
-          marginRight: -16,
-        }}>
-          {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
-            const grammars = dimToGrammar[dimKey] || [];
-            const hasAny = grammars.length > 0;
-            return (
-              <div
-                key={dimKey}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: tokens.space.sm,
-                  padding: `${tokens.space.sm}px 0`,
-                  borderBottom: `1px solid ${tokens.color.border.subtle}`,
-                  minHeight: 28,
-                }}
-              >
-                {/* Left: dimension label */}
-                <span style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 2,
-                  width: 46,
-                  flexShrink: 0,
-                  fontSize: tokens.font.size.caption,
-                  fontWeight: tokens.font.weight.semibold,
-                  color: hasAny ? dim.color : tokens.color.text.muted,
-                  opacity: hasAny ? 1 : 0.4,
-                }}>
-                  <span style={{ fontSize: 11, lineHeight: 1 }}>{dim.icon}</span>
-                  <span>{dim.shortLabel}</span>
-                </span>
-
-                {/* Right: grammar type pills — always shown, marked=full, unmarked=dim */}
-                <span style={{
-                  flex: 1,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 4,
-                }}>
-                  {hasAny ? (
-                    grammars.map(g => {
-                      const isMarked = markedTypes.has(g.type);
-                      return (
-                        <span
-                          key={g.type}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            padding: "1px 6px",
-                            borderRadius: tokens.radius.pill,
-                            fontSize: tokens.font.size.caption,
-                            fontWeight: tokens.font.weight.semibold,
-                            lineHeight: 1.5,
-                            whiteSpace: "nowrap",
-                            background: isMarked ? dim.bg : "transparent",
-                            color: isMarked ? dim.color : dim.color,
-                            border: `1px solid ${isMarked ? dim.border : dim.color}30`,
-                            opacity: isMarked ? 1 : 0.35,
-                            userSelect: "none",
-                          }}
-                        >
-                          {g.label}
-                        </span>
-                      );
-                    })
-                  ) : (
-                    <span style={{
-                      fontSize: tokens.font.size.caption,
-                      color: tokens.color.text.faded,
-                      fontStyle: "italic",
-                    }}>—</span>
-                  )}
-                </span>
-              </div>
             );
           })}
         </div>
@@ -1012,75 +913,102 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
           </div>
         </div>
 
-        {/* Right legend — two-tier: score dimensions (upper) + grammar types (lower) */}
+        {/* Right panel — dimension→grammar legend + progress */}
         <div style={S.help}>
           <div style={S.helpBody}>
-            {/* ── Tier 1: Score Dimensions 得分维度 ── */}
-            <div style={S.helpTitle}>🎯 得分维度（拖入标记）</div>
-            <div style={DS.legendHint}>
-              拖拽得分维度到句中对应文字，标记"为什么能得分"
+            {/* ── Dimension → Grammar mapping table ── */}
+            <div style={S.helpTitle}>🎯 得分维度 · 拖入匹配</div>
+            <div style={{ fontSize: tokens.font.size.caption, color: tokens.color.text.muted, marginBottom: tokens.space.lg, lineHeight: 1.5 }}>
+              拖拽维度到句中对应文字。匹配正确→得分，错误→弹回
             </div>
-            {Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => (
-              <div
-                key={dimKey}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/score-dimension", dimKey);
-                  e.dataTransfer.effectAllowed = "copy";
-                  e.currentTarget.style.opacity = "0.5";
-                }}
-                onDragEnd={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                }}
-                style={{
-                  ...DS.draggableLegendItem,
-                  background: dim.bg,
-                  border: `1px solid ${dim.border}`,
-                }}
-                title={`拖拽"${dim.label}"到句子中的对应文字\n${dim.desc}`}
-              >
-                <span style={{ fontSize:15 }}>{dim.icon}</span>
-                <span style={{ ...DS.legendLabel, fontWeight: tokens.font.weight.bold, color:dim.color }}>{dim.label}</span>
-                <span style={{ fontSize: tokens.font.size.xs, color:tokens.color.text.muted, marginLeft:"auto" }}>{dim.shortLabel}</span>
-                <span style={DS.dragHandle}>⠿</span>
-              </div>
-            ))}
+            {(() => {
+              // Compute dim→grammar for current sentence side
+              const sideKey = "a"; // This is always called per-side via HighlightSentence
+              // Actually we need both sides. Let's compute from both.
+              const allHL = [...discovery.a.highlights, ...discovery.b.highlights];
+              const dimToG = {};
+              allHL.forEach(hl => {
+                const dk = TYPE_TO_DIMENSION[hl.type];
+                if (!dk) return;
+                if (!dimToG[dk]) dimToG[dk] = [];
+                const tm = HIGHLIGHT_TYPES[hl.type];
+                if (!dimToG[dk].find(g => g.type === hl.type)) {
+                  dimToG[dk].push({ type: hl.type, label: tm?.label || hl.type, color: tm?.color, bg: tm?.bg, border: tm?.color + "40" });
+                }
+              });
+              // Marked types from current clicks
+              const marked = new Set();
+              const curHL = highlights[sentData.id] || { a: new Set(), b: new Set() };
+              allHL.forEach((hl, idx) => {
+                // Indices: first half are A, second half are B
+                const sideLetter = idx < discovery.a.highlights.length ? "a" : "b";
+                const realIdx = sideLetter === "a" ? idx : idx - discovery.a.highlights.length;
+                if (curHL[sideLetter]?.has(realIdx)) marked.add(hl.type);
+              });
 
-            {/* Divider */}
-            <div style={{
-              margin:"12px 0", borderTop: `1px solid ${tokens.color.border.light}`,
-              display:"flex", justifyContent:"center",
-            }}>
-              <span style={{
-                position:"relative", top:-8, background:tokens.color.subtle,
-                padding:"0 8px", fontSize: tokens.font.size.xs, color:tokens.color.text.muted, fontWeight: tokens.font.weight.medium,
-              }}>
-                语法技巧标签
-              </span>
-            </div>
+              return Object.entries(SCORE_DIMENSIONS).map(([dimKey, dim]) => {
+                const grammars = dimToG[dimKey] || [];
+                const hasAny = grammars.length > 0;
+                return (
+                  <div key={dimKey} style={{
+                    marginBottom: tokens.space.lg,
+                  }}>
+                    {/* Dimension row — draggable */}
+                    <div
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("application/score-dimension", dimKey);
+                        e.dataTransfer.effectAllowed = "copy";
+                      }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: tokens.space.sm,
+                        padding: `${tokens.space.xs}px ${tokens.space.sm}px`,
+                        borderRadius: tokens.radius.pill,
+                        background: hasAny ? dim.bg : tokens.color.subtle,
+                        border: `1px solid ${hasAny ? dim.border : tokens.color.border.subtle}`,
+                        marginBottom: tokens.space.xs,
+                        cursor: "grab",
+                        opacity: hasAny ? 1 : 0.45,
+                        userSelect: "none",
+                      }}
+                      title={`拖拽"${dim.label}"到句子中对应文字`}
+                    >
+                      <span style={{ fontSize: 13, lineHeight: 1 }}>{dim.icon}</span>
+                      <span style={{ fontSize: tokens.font.size.sm, fontWeight: tokens.font.weight.bold, color: hasAny ? dim.color : tokens.color.text.muted, flex: 1 }}>
+                        {dim.shortLabel}
+                      </span>
+                      <span style={{ fontSize: 9, color: tokens.color.text.faded }}>⠿</span>
+                    </div>
+                    {/* Grammar types under this dimension */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, paddingLeft: 4 }}>
+                      {hasAny ? grammars.map(g => {
+                        const isMarked = marked.has(g.type);
+                        return (
+                          <span key={g.type} style={{
+                            display: "inline-flex", alignItems: "center",
+                            padding: "1px 6px", borderRadius: tokens.radius.pill,
+                            fontSize: tokens.font.size.caption, fontWeight: tokens.font.weight.semibold,
+                            lineHeight: 1.5, whiteSpace: "nowrap",
+                            background: isMarked ? dim.bg : "transparent",
+                            color: dim.color,
+                            border: `1px solid ${isMarked ? dim.border : dim.color}30`,
+                            opacity: isMarked ? 1 : 0.35,
+                            userSelect: "none",
+                          }}>
+                            {g.label}
+                          </span>
+                        );
+                      }) : (
+                        <span style={{ fontSize: tokens.font.size.caption, color: tokens.color.text.faded, fontStyle: "italic" }}>—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
 
-            {/* ── Tier 2: Grammar Types 语法技巧 ── */}
-            {Object.entries(HIGHLIGHT_TYPES).slice(0, 8).map(([key, meta]) => (
-              <div
-                key={key}
-                draggable
-                onDragStart={(e) => {
-                  e.dataTransfer.setData("application/highlight-type", key);
-                  e.dataTransfer.effectAllowed = "copy";
-                  e.currentTarget.style.opacity = "0.5";
-                }}
-                onDragEnd={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                }}
-                style={DS.draggableLegendItem}
-                title={`拖拽 "${meta.label}" 到句子中的标亮区域`}
-              >
-                <span style={{ ...DS.legendLabel, color: meta.color, fontWeight:600 }}>{meta.label}</span>
-                <span style={DS.dragHandle}>⠿</span>
-              </div>
-            ))}
-
-            <div style={{ ...S.helpTitle, marginTop: 16 }}>🔍 标记进度</div>
+            {/* Progress */}
+            <div style={{ ...S.helpTitle, marginTop: tokens.space.md }}>🔍 标记进度</div>
             <div style={DS.legendCount}>
               <div style={DS.progressRow}>
                 <span style={{ ...DS.progressDot, background: tokens.color.mode.a }} />
@@ -1095,7 +1023,7 @@ function DiscoveryScreen({ topic, onComplete, onBack }) {
               </div>
             </div>
 
-            <div style={{ ...S.helpTitle, marginTop: 16 }}>💡 当前句子功能</div>
+            <div style={{ ...S.helpTitle, marginTop: tokens.space.xxl }}>💡 当前句子功能</div>
             <div style={DS.legendCount}>
               <div style={{ fontWeight: 600, marginBottom: 4, fontSize: 13 }}>{sentData.role}</div>
               <div style={{ fontSize: 12, color: tokens.color.text.label, lineHeight: 1.6 }}>{sentData.tip}</div>
@@ -1845,7 +1773,7 @@ const DS = {
 	  dividerLine: { flex:1, height:1, background: `linear-gradient(to right, transparent, ${tokens.color.border.dashed}, transparent)` },
 	  dividerText: { fontSize: tokens.font.size.caption, color:tokens.color.text.muted, fontWeight: tokens.font.weight.medium, whiteSpace:"nowrap" },
   sentenceCard: {
-    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 16px 20px 32px", border:"none",
+    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 32px 20px", border:"none",
     boxShadow: tokens.shadow.hairline, position:"relative",
   },
   sentenceCardHeader: {
