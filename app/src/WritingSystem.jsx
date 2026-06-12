@@ -429,12 +429,17 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
     }
   };
 
-  // Build per-segment annotation data for chips below text
-  const segmentAnnotations = {};
+  // Build ordered list of marked annotations (preserve text order for chip row)
+  const markedAnnotations = [];
   sortedHL.forEach((hl, idx) => {
     if (clickedIds.has(idx)) {
       const dimKey = TYPE_TO_DIMENSION[hl.type];
-      segmentAnnotations[idx] = dimKey ? SCORE_DIMENSIONS[dimKey] : null;
+      const dimMeta = dimKey ? SCORE_DIMENSIONS[dimKey] : null;
+      const typeMeta = HIGHLIGHT_TYPES[hl.type] || { color: accentColor, bg: accentColor + "20" };
+      markedAnnotations.push({
+        hlIndex: idx, text: hl.label.split("—")[0]?.trim() || text.slice(hl.start, hl.end),
+        dimKey, dimMeta, typeMeta,
+      });
     }
   });
 
@@ -454,7 +459,7 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
         </span>
       </div>
 
-      {/* ── Sentence text — the hero, with annotation chips below marked words ── */}
+      {/* ── Sentence text — the hero. All spans display:inline so words never split ── */}
       <div style={DS.sentenceText}>
         {segments.map((seg, i) => {
           if (!seg.isHighlight) {
@@ -463,115 +468,96 @@ function HighlightSentence({ text, highlights, clickedIds, onToggle, onDrop, acc
           const isClicked = clickedIds.has(seg.hlIndex);
           const isDragOver = dragOverZone === `${side}-${seg.hlIndex}`;
           const typeMeta = HIGHLIGHT_TYPES[seg.type] || { color: accentColor, bg: accentColor + "20" };
-          const ann = segmentAnnotations[seg.hlIndex];
 
           return (
             <span
               key={i}
+              onClick={() => onToggle(seg.hlIndex)}
+              onDragOver={(e) => handleDragOver(e, seg.hlIndex)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, seg.hlIndex)}
               style={{
-                position: "relative",
-                display: "inline-block",
-                verticalAlign: "top",
+                ...DS.highlightZone,
+                background: isDragOver
+                  ? typeMeta.bg
+                  : isClicked
+                    ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
+                    : "transparent",
+                borderBottom: isClicked
+                  ? `3px solid ${typeMeta.color}`
+                  : isDragOver
+                    ? `3px dashed ${typeMeta.color}`
+                    : `2px dotted ${tokens.color.text.faded}`,
+                cursor: "pointer",
+                borderRadius: isClicked || isDragOver ? tokens.radius.tight : 3,
+                boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
+                transform: isDragOver ? "scale(1.04)" : "scale(1)",
+                transition: `all ${tokens.transition.normal}`,
+                userSelect: "none",
+                // No display override — stays inline, words flow naturally
               }}
+              title={
+                isClicked
+                  ? `✓ ${typeMeta.label} — 点击取消`
+                  : isDragOver
+                    ? "松开放置得分维度"
+                    : "👆 点击标记，或从右侧拖入维度标签"
+              }
             >
-              {/* Highlighted text span */}
-              <span
-                onClick={() => onToggle(seg.hlIndex)}
-                onDragOver={(e) => handleDragOver(e, seg.hlIndex)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, seg.hlIndex)}
-                style={{
-                  ...DS.highlightZone,
-                  background: isDragOver
-                    ? typeMeta.bg
-                    : isClicked
-                      ? `linear-gradient(180deg, transparent 55%, ${typeMeta.bg} 55%)`
-                      : "transparent",
-                  borderBottom: isClicked
-                    ? `3px solid ${typeMeta.color}`
-                    : isDragOver
-                      ? `3px dashed ${typeMeta.color}`
-                      : `2px dotted ${tokens.color.text.faded}`,
-                  cursor: "pointer",
-                  borderRadius: isClicked || isDragOver ? tokens.radius.tight : 3,
-                  boxShadow: isDragOver ? `0 0 0 6px ${typeMeta.bg}` : "none",
-                  transform: isDragOver ? "scale(1.04)" : "scale(1)",
-                  transition: `all ${tokens.transition.normal}`,
-                  userSelect: "none",
-                }}
-                title={
-                  isClicked
-                    ? `✓ ${typeMeta.label} — 点击取消`
-                    : isDragOver
-                      ? "松开放置得分维度"
-                      : "👆 点击标记，或从右侧拖入维度标签"
-                }
-              >
-                {seg.text}
-              </span>
-
-              {/* Annotation chip — positioned directly below the marked text */}
-              {isClicked && ann && (
-                <span
-                  onClick={() => onToggle(seg.hlIndex)}
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    marginTop: 2,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 2,
-                    padding: "1px 7px",
-                    borderRadius: tokens.radius.pill,
-                    fontSize: 9,
-                    fontWeight: tokens.font.weight.semibold,
-                    lineHeight: 1.5,
-                    whiteSpace: "nowrap",
-                    cursor: "pointer",
-                    background: ann.bg,
-                    color: ann.color,
-                    border: `1px solid ${ann.border}`,
-                    boxShadow: tokens.shadow.hairline,
-                    userSelect: "none",
-                    transition: `all ${tokens.transition.fast}`,
-                    zIndex: 2,
-                  }}
-                  title={`${ann.label} — 点击移除`}
-                >
-                  <span style={{ fontSize: 10, lineHeight: 1 }}>{ann.icon}</span>
-                  <span>{ann.shortLabel}</span>
-                </span>
-              )}
-
-              {/* Drag-over preview chip */}
-              {isDragOver && !isClicked && (
-                <span style={{
-                  position: "absolute",
-                  top: "100%",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  marginTop: 2,
-                  padding: "1px 8px",
-                  borderRadius: tokens.radius.pill,
-                  fontSize: 9,
-                  lineHeight: 1.5,
-                  whiteSpace: "nowrap",
-                  background: typeMeta.bg,
-                  color: typeMeta.color,
-                  border: `1px dashed ${typeMeta.color}`,
-                  opacity: 0.7,
-                  pointerEvents: "none",
-                  zIndex: 2,
-                }}>
-                  松开放置
-                </span>
-              )}
+              {seg.text}
             </span>
           );
         })}
       </div>
+
+      {/* ── Annotation chip row — compact pills below sentence, in text order ── */}
+      {markedAnnotations.length > 0 && (
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: tokens.space.md,
+          paddingBottom: tokens.space.lg,
+        }}>
+          {markedAnnotations.map((ma) => (
+            <span
+              key={ma.hlIndex}
+              onClick={() => onToggle(ma.hlIndex)}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "2px 8px",
+                borderRadius: tokens.radius.pill,
+                fontSize: tokens.font.size.caption,
+                fontWeight: tokens.font.weight.medium,
+                lineHeight: 1.5,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                background: ma.typeMeta.bg,
+                color: ma.typeMeta.color,
+                border: `1px solid ${ma.typeMeta.color}40`,
+                transition: `all ${tokens.transition.fast}`,
+                userSelect: "none",
+              }}
+              title={`${ma.dimMeta?.label || ""} — ${ma.typeMeta.label} — 点击移除`}
+            >
+              {ma.dimMeta && (
+                <span style={{ fontSize: 12, lineHeight: 1 }}>{ma.dimMeta.icon}</span>
+              )}
+              <span style={{ fontWeight: tokens.font.weight.semibold }}>
+                {ma.dimMeta?.shortLabel || ma.typeMeta.label}
+              </span>
+              <span style={{
+                fontSize: tokens.font.size.caption,
+                color: tokens.color.text.muted,
+                maxWidth: 120,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}>
+                {ma.text}
+              </span>
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* ── Footer — single compact hint line ── */}
       <div style={{
@@ -1802,12 +1788,12 @@ const DS = {
     letterSpacing: tokens.font.letterSpacing.normal,
   },
   sentenceText: {
-    fontSize: 20, lineHeight: 3.2, color: tokens.color.text.primary,
+    fontSize: 20, lineHeight: 2.0, color: tokens.color.text.primary,
     fontWeight: tokens.font.weight.medium, letterSpacing: tokens.font.letterSpacing.tight,
-    paddingBottom: 44,  // space for annotation chips below last line
+    paddingBottom: tokens.space.xxl,
   },
   highlightZone: {
-    padding:"1px 3px", borderRadius: tokens.radius.tight, margin:"0 1px",
+    padding:"0 1px", borderRadius: tokens.radius.tight, margin:"0",
   },
   markedLabelsArea: {
 
