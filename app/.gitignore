@@ -27,3 +27,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+screenshots/*.png
+screenshots/before/
+screenshots/after/
+screenshots/before-annot/
+screenshots/token-report.md
