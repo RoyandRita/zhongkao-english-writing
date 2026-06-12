@@ -1773,13 +1773,13 @@ const DS = {
   positionHeader: { display:"flex", alignItems:"center", gap: tokens.space.lg, marginBottom:4 },
   positionBadge: { color:tokens.color.card, padding:"4px 14px", borderRadius: tokens.radius.pill, fontSize: tokens.font.size.body, fontWeight:800 },
   positionHint: { fontSize: tokens.font.size.sm, color:tokens.color.text.muted, lineHeight: tokens.font.lineHeight.normal, fontWeight:400 },
-  compareCol: { display:"flex", flexDirection:"row", gap: tokens.space.xxl, alignItems:"flex-start" },
-	  sentenceDivider: { display:"flex", flexDirection:"column", alignItems:"center", gap: tokens.space.sm, padding:"0 4px", alignSelf:"stretch", justifyContent:"center" },
+  compareCol: { display:"flex", flexDirection:"column", gap:0 },
+	  sentenceDivider: { display:"flex", alignItems:"center", gap: tokens.space.lg, padding:"8px 0", margin:"2px 0" },
 	  dividerLine: { flex:1, height:1, background: `linear-gradient(to right, transparent, ${tokens.color.border.dashed}, transparent)` },
 	  dividerText: { fontSize: tokens.font.size.caption, color:tokens.color.text.muted, fontWeight: tokens.font.weight.medium, whiteSpace:"nowrap" },
   sentenceCard: {
-    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 20px 20px", border:"none",
-    boxShadow: tokens.shadow.hairline, position:"relative", flex:1, minWidth:0,
+    background:tokens.color.card, borderRadius: tokens.radius.floating, padding:"24px 32px 20px", border:"none",
+    boxShadow: tokens.shadow.hairline, position:"relative",
   },
   sentenceCardHeader: {
     display:"flex", alignItems:"center", justifyContent:"space-between",
